@@ -9,8 +9,15 @@ import (
 	"testing"
 )
 
+func init() {
+	err := os.Mkdir("tmp", os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestNormalFile(t *testing.T) {
-	filePath := "/home/troublor/workspace/go/trash-go/abc.txt"
+	filePath := "tmp/abc.txt"
 	file, err := os.Create(filePath)
 	if err != nil {
 		panic(err)
@@ -40,9 +47,13 @@ func TestNormalFile(t *testing.T) {
 	if len(infos) != 1 {
 		t.Fatal("the length of database record is wrong")
 	}
+	absFilePath, err := filepath.Abs(filePath)
+	if err != nil {
+		panic(err)
+	}
 	if infos[0].Id != id ||
 		infos[0].BaseName != path.Base(filePath) ||
-		infos[0].OriginalPath != filePath ||
+		infos[0].OriginalPath != absFilePath ||
 		infos[0].TrashPath != trashPath ||
 		infos[0].ItemType != operation.TYPE_FILE {
 		t.Fatal("database record error")
@@ -84,7 +95,7 @@ func TestWrongFilePath(t *testing.T) {
 
 func TestEmptyDirectory(t *testing.T) {
 
-	dirPath := "test_dir"
+	dirPath := "tmp/test_dir"
 	err := os.Mkdir(dirPath, os.ModePerm)
 	if err != nil {
 		panic(err)
@@ -143,7 +154,7 @@ func TestEmptyDirectory(t *testing.T) {
 }
 
 func TestNestedDirectory(t *testing.T) {
-	dirPath1, dirPath2 := "parent", "child"
+	dirPath1, dirPath2 := "tmp/parent", "child"
 	filePath1, filePath2 := "file1.txt", "file2.txt"
 	err := os.Mkdir(dirPath1, os.ModePerm)
 	if err != nil {
@@ -210,7 +221,7 @@ func TestNestedDirectory(t *testing.T) {
 		infos[0].OriginalPath != originalPath ||
 		infos[0].TrashPath != path.Join(operation.GetTrashPath(), id) ||
 		infos[0].ItemType != operation.TYPE_DIRECTORY ||
-		infos[0].BaseName != dirPath1 {
+		infos[0].BaseName != path.Base(dirPath1) {
 		t.Fatal("record information is wrong")
 	}
 	_, err = operation.UnRemove(id, true, false)
@@ -223,7 +234,7 @@ func TestNestedDirectory(t *testing.T) {
 	}
 }
 func TestOverride(t *testing.T) {
-	filePath := "file.txt"
+	filePath := "tmp/file.txt"
 	file, err := os.Create(filePath)
 	if err != nil {
 		panic(err)
