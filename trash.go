@@ -37,7 +37,7 @@ func main() {
 		itemPath := rmCmd.Arg(0)
 		id, err := operation.Remove(itemPath, *rmDirectory, *rmRecursive)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Remove Error: " + err.Error())
 		} else {
 			fmt.Println("remove " + itemPath + " complete, trash id = " + id)
 		}
@@ -52,13 +52,13 @@ func main() {
 		if err != nil {
 			switch err {
 			case errs.ItemNotExistError:
-				fmt.Println("can not find " + payload + " in trash bin")
+				fmt.Println("UnRemove Error: " + "can not find " + payload + " in trash bin")
 			case errs.ItemExistError:
-				fmt.Println("a file or directory already exists in original path, please try again with option -o")
+				fmt.Println("UnRemove Error: " + "a file or directory already exists in original path, please try again with option -o")
 			case errs.MultipleItemsError:
-				fmt.Println("multiple items named '" + payload + "' found in trash bin, please specify trash id to retrieve")
+				fmt.Println("UnRemove Error: " + "multiple items named '" + payload + "' found in trash bin, please specify trash id to retrieve")
 			default:
-				fmt.Println("retrieve failed")
+				fmt.Println("UnRemove Error: " + "retrieve failed")
 			}
 		} else {
 			fmt.Printf("retrieve %s to %s\n", trashInfo.BaseName, trashInfo.OriginalPath)
