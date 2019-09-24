@@ -24,6 +24,8 @@ gen
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+bin/
+
 trash_info.db
 trash_bin/
 trash
