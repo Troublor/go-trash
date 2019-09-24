@@ -13,7 +13,8 @@ import (
 var config gonfig.Gonfig
 
 func GetTrashCmdDir() string {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	r, _ := os.Executable()
+	dir, err := filepath.Abs(filepath.Dir(r))
 	if err != nil {
 		panic(err)
 	}
