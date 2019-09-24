@@ -2,6 +2,7 @@ package operation
 
 import (
 	"errors"
+	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/storage"
 	"os"
 )
@@ -17,7 +18,7 @@ func UnRemove(payload string, isId bool, override bool) (*storage.TrashInfo, err
 func unRemoveById(id string, override bool) (*storage.TrashInfo, error) {
 	trashInfo, err := storage.DbGetTrashItemById(id)
 	if err != nil {
-		return trashInfo, ItemNotExistError
+		return trashInfo, errs.ItemNotExistError
 	}
 	// move the item out of trash directory
 	if _, err = os.Stat(trashInfo.OriginalPath); err == nil {
@@ -31,13 +32,13 @@ func unRemoveById(id string, override bool) (*storage.TrashInfo, error) {
 				panic(errors.New("invalid argument itemType: " + trashInfo.ItemType))
 			}
 		} else {
-			return trashInfo, ItemExistError
+			return trashInfo, errs.ItemExistError
 		}
 	}
 	// delete information in database
 	err = storage.DbDeleteTrashItem(id)
 	if err != nil {
-		return trashInfo, ItemNotExistError
+		return trashInfo, errs.ItemNotExistError
 	}
 	err = storage.SafeRename(trashInfo.TrashPath, trashInfo.OriginalPath)
 	if err != nil {
@@ -56,9 +57,9 @@ func unRemoveByName(name string, override bool) (*storage.TrashInfo, error) {
 		}
 	}
 	if count == 0 {
-		return nil, ItemNotExistError
+		return nil, errs.ItemNotExistError
 	} else if count > 1 {
-		return nil, MultipleItemsError
+		return nil, errs.MultipleItemsError
 	} else {
 		return unRemoveById(id, override)
 	}

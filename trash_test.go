@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/operation"
 	"github.com/Troublor/trash-go/storage"
 	"io/ioutil"
@@ -28,7 +29,7 @@ func TestNormalFile(t *testing.T) {
 		_ = os.Remove(filePath)
 	}()
 	_, err = operation.Remove(filePath, true, false)
-	if err != operation.IsFileError {
+	if err != errs.IsFileError {
 		panic("report wrong error type")
 	}
 	id, err := operation.Remove(filePath, false, false)
@@ -82,14 +83,14 @@ func TestWrongFilePath(t *testing.T) {
 	if err == nil {
 		t.Fatal("don't report file not exist error")
 	}
-	if err != operation.ItemNotExistError {
+	if err != errs.ItemNotExistError {
 		t.Fatal("report a wrong error type")
 	}
 	_, err = operation.UnRemove("non-exist", false, false)
 	if err == nil {
 		t.Fatal("don't report file not exist error")
 	}
-	if err != operation.ItemNotExistError {
+	if err != errs.ItemNotExistError {
 		t.Fatal("report a wrong error type")
 	}
 }
@@ -108,7 +109,7 @@ func TestEmptyDirectory(t *testing.T) {
 	if err == nil {
 		t.Fatal("delete directory when it shouldn't")
 	}
-	if err != operation.IsDirectoryError {
+	if err != errs.IsDirectoryError {
 		t.Fatal("report wrong error type")
 	}
 	id, err := operation.Remove(dirPath, true, false)
@@ -260,7 +261,7 @@ func TestOverride(t *testing.T) {
 	_, err = operation.UnRemove(id, true, false)
 	if err == nil {
 		t.Fatal("override when it shouldn't")
-	} else if err != operation.ItemExistError {
+	} else if err != errs.ItemExistError {
 		t.Fatal("report wrong error")
 	}
 	_, err = operation.UnRemove(id, true, true)

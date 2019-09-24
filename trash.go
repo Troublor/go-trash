@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/operation"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -19,6 +19,9 @@ func main() {
 
 	lsCmd := flag.NewFlagSet("ls", flag.ExitOnError)
 	lsDetail := lsCmd.Bool("d", false, "List the detail of all items in trash bin")
+
+	ssCmd := flag.NewFlagSet("ss", flag.ExitOnError)
+	ssDetail := ssCmd.Bool("d", false, "Show the detail of searched items in trash bin")
 
 	if len(os.Args) < 2 {
 		fmt.Println(Usage())
@@ -48,11 +51,11 @@ func main() {
 		trashInfo, err := operation.UnRemove(payload, *urId, *urOverride)
 		if err != nil {
 			switch err {
-			case operation.ItemNotExistError:
+			case errs.ItemNotExistError:
 				fmt.Println("can not find " + payload + " in trash bin")
-			case operation.ItemExistError:
+			case errs.ItemExistError:
 				fmt.Println("a file or directory already exists in original path, please try again with option -o")
-			case operation.MultipleItemsError:
+			case errs.MultipleItemsError:
 				fmt.Println("multiple items named '" + payload + "' found in trash bin, please specify trash id to retrieve")
 			default:
 				fmt.Println("retrieve failed")
@@ -66,10 +69,16 @@ func main() {
 			fmt.Println("Usage Error")
 			fmt.Println(Usage())
 		}
-		results := operation.List(*lsDetail)
-		for _, result := range results {
-			fmt.Println(strings.Join(result, "\t"))
+		results := operation.List()
+		fmt.Println(results.ToString(*lsDetail))
+	case "ss":
+		err := ssCmd.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Println("Usage Error")
+			fmt.Println(Usage())
 		}
+		results := operation.Search(ssCmd.Arg(0))
+		fmt.Println(results.ToString(*ssDetail))
 	}
 }
 

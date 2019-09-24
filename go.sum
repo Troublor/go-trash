@@ -1,4 +1,6 @@
 bou.ke/monkey v1.0.1/go.mod h1:FgHuK96Rv2Nlf+0u1OOVDpCMdsWyOFmeeketDHE7LIg=
+github.com/bndr/gotabulate v1.1.2 h1:yC9izuZEphojb9r+KYL4W9IJKO/ceIO8HDwxMA24U4c=
+github.com/bndr/gotabulate v1.1.2/go.mod h1:0+8yUgaPTtLRTjf49E8oju7ojpU11YmXyvq1LbPAb3U=
 github.com/creamdog/gonfig v0.0.0-20160810132730-80d86bfb5a37 h1:1oltS/xFsArksN6n2nXIYU5tkkDBqKgpcOvfPsTepR4=
 github.com/creamdog/gonfig v0.0.0-20160810132730-80d86bfb5a37/go.mod h1:Hhbh5su1JZ8cglUlxBwQjz0uwtmFhV/0D6DgvU3oT+4=
 github.com/mattn/go-sqlite3 v1.11.0 h1:LDdKkqtYlom37fkvqs8rMPFKAMe8+SgjbwZ6ex1/A/Q=

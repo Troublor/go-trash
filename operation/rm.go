@@ -1,6 +1,7 @@
 package operation
 
 import (
+	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/storage"
 	"io"
 	"os"
@@ -20,7 +21,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 	fileInfo, err := os.Stat(itemPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return "", ItemNotExistError
+			return "", errs.ItemNotExistError
 		} else {
 			panic(err)
 		}
@@ -28,7 +29,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 
 	if !isDirectory {
 		if fileInfo.IsDir() {
-			return "", IsDirectoryError
+			return "", errs.IsDirectoryError
 		}
 		// add information in database
 		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE)
@@ -40,14 +41,14 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 		return id, nil
 	} else {
 		if !fileInfo.IsDir() {
-			return "", IsFileError
+			return "", errs.IsFileError
 		}
 		isEmpty, err := DirectoryIsEmpty(itemPath)
 		if err != nil {
 			panic(err)
 		}
 		if !isEmpty && !recursive {
-			return "", DirectoryNotEmptyError
+			return "", errs.DirectoryNotEmptyError
 		}
 		// add information in database
 		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY)

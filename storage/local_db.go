@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	"github.com/Troublor/trash-go/operation"
+	"github.com/Troublor/trash-go/errs"
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
@@ -154,7 +154,7 @@ func DbInsertTrashItem(originalPath, trashDir, baseName, itemType string) string
 	return id
 }
 
-func DbListAllTrashItems() []TrashInfo {
+func DbListAllTrashItems() TrashInfoList {
 	rows, err := database.Query("SELECT * FROM trash_info")
 	if err != nil {
 		panic(err.Error())
@@ -202,7 +202,7 @@ func DbDeleteTrashItem(id string) error {
 		panic(err.Error())
 	}
 	if n < 1 {
-		return operation.ItemNotExistError
+		return errs.ItemNotExistError
 	}
 	return nil
 }

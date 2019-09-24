@@ -1,4 +1,4 @@
-package operation
+package errs
 
 import (
 	"errors"
