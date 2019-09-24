@@ -1,10 +1,11 @@
-package operation
+package storage
 
 import (
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"github.com/Troublor/trash-go/operation"
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
@@ -201,7 +202,7 @@ func DbDeleteTrashItem(id string) error {
 		panic(err.Error())
 	}
 	if n < 1 {
-		return ItemNotExistError
+		return operation.ItemNotExistError
 	}
 	return nil
 }

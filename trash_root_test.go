@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Troublor/trash-go/operation"
+	"github.com/Troublor/trash-go/storage"
 	"os"
 	"path"
 	"testing"
@@ -22,7 +23,7 @@ func TestCrossDriveRemove(t *testing.T) {
 	if err != nil {
 		t.Fatal("remove failed")
 	}
-	if _, err = os.Stat(path.Join(operation.GetTrashPath(), id)); err != nil {
+	if _, err = os.Stat(path.Join(storage.GetTrashPath(), id)); err != nil {
 		t.Fatal("remove unfinished")
 	}
 	_, err = operation.UnRemove(id, true, false)

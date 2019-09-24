@@ -1,6 +1,7 @@
 package operation
 
 import (
+	"github.com/Troublor/trash-go/storage"
 	"io"
 	"os"
 	"path"
@@ -8,7 +9,7 @@ import (
 )
 
 func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
-	trashDir := GetTrashPath()
+	trashDir := storage.GetTrashPath()
 	var err error
 	if !filepath.IsAbs(itemPath) {
 		itemPath, err = filepath.Abs(itemPath)
@@ -30,9 +31,9 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 			return "", IsDirectoryError
 		}
 		// add information in database
-		id := DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), TYPE_FILE)
+		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE)
 		// move the item into trash directory
-		err := SafeRename(itemPath, path.Join(trashDir, id))
+		err := storage.SafeRename(itemPath, path.Join(trashDir, id))
 		if err != nil {
 			panic(err)
 		}
@@ -49,9 +50,9 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 			return "", DirectoryNotEmptyError
 		}
 		// add information in database
-		id := DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), TYPE_DIRECTORY)
+		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY)
 		// move the item into trash directory
-		err = SafeRename(itemPath, path.Join(trashDir, id))
+		err = storage.SafeRename(itemPath, path.Join(trashDir, id))
 		if err != nil {
 			panic(err)
 		}

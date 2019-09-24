@@ -1,4 +1,4 @@
-package operation
+package storage
 
 import (
 	"github.com/creamdog/gonfig"

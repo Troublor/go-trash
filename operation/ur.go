@@ -2,10 +2,11 @@ package operation
 
 import (
 	"errors"
+	"github.com/Troublor/trash-go/storage"
 	"os"
 )
 
-func UnRemove(payload string, isId bool, override bool) (*TrashInfo, error) {
+func UnRemove(payload string, isId bool, override bool) (*storage.TrashInfo, error) {
 	if isId {
 		return unRemoveById(payload, override)
 	} else {
@@ -13,8 +14,8 @@ func UnRemove(payload string, isId bool, override bool) (*TrashInfo, error) {
 	}
 }
 
-func unRemoveById(id string, override bool) (*TrashInfo, error) {
-	trashInfo, err := DbGetTrashItemById(id)
+func unRemoveById(id string, override bool) (*storage.TrashInfo, error) {
+	trashInfo, err := storage.DbGetTrashItemById(id)
 	if err != nil {
 		return trashInfo, ItemNotExistError
 	}
@@ -22,9 +23,9 @@ func unRemoveById(id string, override bool) (*TrashInfo, error) {
 	if _, err = os.Stat(trashInfo.OriginalPath); err == nil {
 		// original path already exist another file
 		if override {
-			if trashInfo.ItemType == TYPE_DIRECTORY {
+			if trashInfo.ItemType == storage.TYPE_DIRECTORY {
 				_ = os.RemoveAll(trashInfo.OriginalPath)
-			} else if trashInfo.ItemType == TYPE_FILE {
+			} else if trashInfo.ItemType == storage.TYPE_FILE {
 				_ = os.Remove(trashInfo.OriginalPath)
 			} else {
 				panic(errors.New("invalid argument itemType: " + trashInfo.ItemType))
@@ -34,20 +35,20 @@ func unRemoveById(id string, override bool) (*TrashInfo, error) {
 		}
 	}
 	// delete information in database
-	err = DbDeleteTrashItem(id)
+	err = storage.DbDeleteTrashItem(id)
 	if err != nil {
 		return trashInfo, ItemNotExistError
 	}
-	err = SafeRename(trashInfo.TrashPath, trashInfo.OriginalPath)
+	err = storage.SafeRename(trashInfo.TrashPath, trashInfo.OriginalPath)
 	if err != nil {
 		panic(err)
 	}
 	return trashInfo, nil
 }
-func unRemoveByName(name string, override bool) (*TrashInfo, error) {
+func unRemoveByName(name string, override bool) (*storage.TrashInfo, error) {
 	count := 0
 	var id string
-	items := DbListAllTrashItems()
+	items := storage.DbListAllTrashItems()
 	for _, item := range items {
 		if item.BaseName == name {
 			count += 1

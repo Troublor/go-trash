@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Troublor/trash-go/operation"
+	"github.com/Troublor/trash-go/storage"
 	"io/ioutil"
 	"os"
 	"path"
@@ -38,12 +39,12 @@ func TestNormalFile(t *testing.T) {
 	if err == nil {
 		t.Fatal("didn't remove")
 	}
-	trashPath := path.Join(operation.GetTrashPath(), path.Base(id))
+	trashPath := path.Join(storage.GetTrashPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
 		t.Fatal("removed item is not in trash bin")
 	}
-	infos := operation.DbListAllTrashItems()
+	infos := storage.DbListAllTrashItems()
 	if len(infos) != 1 {
 		t.Fatal("the length of database record is wrong")
 	}
@@ -55,7 +56,7 @@ func TestNormalFile(t *testing.T) {
 		infos[0].BaseName != path.Base(filePath) ||
 		infos[0].OriginalPath != absFilePath ||
 		infos[0].TrashPath != trashPath ||
-		infos[0].ItemType != operation.TYPE_FILE {
+		infos[0].ItemType != storage.TYPE_FILE {
 		t.Fatal("database record error")
 	}
 	trashInfo, err := operation.UnRemove(id, true, false)
@@ -70,7 +71,7 @@ func TestNormalFile(t *testing.T) {
 	if err != nil {
 		t.Fatal("file is not in the original path")
 	}
-	infos = operation.DbListAllTrashItems()
+	infos = storage.DbListAllTrashItems()
 	if len(infos) > 0 {
 		t.Fatal("database record is not deleted")
 	}
@@ -118,12 +119,12 @@ func TestEmptyDirectory(t *testing.T) {
 	if err == nil {
 		t.Fatal("directory is not deleted at all")
 	}
-	trashPath := path.Join(operation.GetTrashPath(), path.Base(id))
+	trashPath := path.Join(storage.GetTrashPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
 		t.Fatal("removed item is not in trash bin")
 	}
-	infos := operation.DbListAllTrashItems()
+	infos := storage.DbListAllTrashItems()
 	if len(infos) != 1 {
 		t.Fatal("the length of database record is wrong")
 	}
@@ -132,7 +133,7 @@ func TestEmptyDirectory(t *testing.T) {
 		infos[0].BaseName != path.Base(dirPath) ||
 		infos[0].OriginalPath != dirPath ||
 		infos[0].TrashPath != trashPath ||
-		infos[0].ItemType != operation.TYPE_DIRECTORY {
+		infos[0].ItemType != storage.TYPE_DIRECTORY {
 		t.Fatal("database record error")
 	}
 	trashInfo, err := operation.UnRemove(id, true, false)
@@ -147,7 +148,7 @@ func TestEmptyDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal("file is not in the original path")
 	}
-	infos = operation.DbListAllTrashItems()
+	infos = storage.DbListAllTrashItems()
 	if len(infos) > 0 {
 		t.Fatal("database record is not deleted")
 	}
@@ -205,22 +206,22 @@ func TestNestedDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal("remove dir failed")
 	}
-	info, err := os.Stat(path.Join(operation.GetTrashPath(), id))
+	info, err := os.Stat(path.Join(storage.GetTrashPath(), id))
 	if err != nil {
 		t.Fatal("removed item is not in trash bin")
 	}
 	if !info.IsDir() {
 		t.Fatal("item type is wrong")
 	}
-	infos := operation.DbListAllTrashItems()
+	infos := storage.DbListAllTrashItems()
 	if len(infos) != 1 {
 		t.Fatal("number of records in database is wrong")
 	}
 	originalPath, _ := filepath.Abs(dirPath1)
 	if infos[0].Id != id ||
 		infos[0].OriginalPath != originalPath ||
-		infos[0].TrashPath != path.Join(operation.GetTrashPath(), id) ||
-		infos[0].ItemType != operation.TYPE_DIRECTORY ||
+		infos[0].TrashPath != path.Join(storage.GetTrashPath(), id) ||
+		infos[0].ItemType != storage.TYPE_DIRECTORY ||
 		infos[0].BaseName != path.Base(dirPath1) {
 		t.Fatal("record information is wrong")
 	}
