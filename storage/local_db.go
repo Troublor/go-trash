@@ -18,6 +18,14 @@ import (
 var database *sql.DB
 
 func init() {
+	initializeSettings := func() {
+		for key, value := range defaultSettings {
+			err := AddSetting(key, value)
+			if err != nil && err != errs.ItemExistError {
+				panic(err)
+			}
+		}
+	}
 	var err error
 	//create trash bin directory
 	if _, err = os.Stat(GetTrashPath()); err != nil {
@@ -54,6 +62,7 @@ func init() {
 	if err != nil {
 		panic(err.Error())
 	}
+	initializeSettings()
 	//Create trash_info table if it does not exist
 	statement, err = database.Prepare("CREATE TABLE IF NOT EXISTS trash_info (id TEXT PRIMARY KEY, original_path TEXT, trash_path TEXT, base_name TEXT, item_type TEXT, owner TEXT, delete_time TIMESTAMP )")
 	if err != nil {
@@ -107,8 +116,10 @@ func AddSetting(key string, value string) error {
 	_, err = statement.Exec(key, value)
 	if err != nil {
 		if err, ok := err.(sqlite3.Error); ok {
-			if err.ExtendedCode == sqlite3.ErrConstraintUnique {
-				return errors.New("the setting key has already existed")
+			//fmt.Println(int(err.Code))
+			//fmt.Println(int(err.ExtendedCode))
+			if err.ExtendedCode == sqlite3.ErrConstraintPrimaryKey {
+				return errs.ItemExistError
 			}
 		}
 		panic(err.Error())
@@ -137,6 +148,33 @@ func UpdateSetting(key string, value string) error {
 	} else {
 		return nil
 	}
+}
+
+func ListAllSettings() SettingList {
+	rows, err := database.Query("SELECT * FROM settings")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer func(r *sql.Rows) {
+		err := r.Close()
+		if err != nil {
+			panic(err.Error())
+		}
+	}(rows)
+	var results []Setting
+	for rows.Next() {
+		var key, value string
+		err = rows.Scan(&key, &value)
+		if err != nil {
+			panic(err.Error())
+		}
+		results = append(results, Setting{key: key, value: value})
+	}
+	err = rows.Err()
+	if err != nil {
+		panic(err.Error())
+	}
+	return results
 }
 
 func DbInsertTrashItem(originalPath, trashDir, baseName, itemType string, owner string) string {

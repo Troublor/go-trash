@@ -23,11 +23,15 @@ func main() {
 	ssCmd := flag.NewFlagSet("ss", flag.ExitOnError)
 	ssDetail := ssCmd.Bool("d", false, "Show the detail of searched items in trash bin")
 
+	settingCmd := flag.NewFlagSet("setting", flag.ExitOnError)
+
 	if len(os.Args) < 2 {
 		fmt.Println(Usage())
 		os.Exit(-1)
 	}
 	switch os.Args[1] {
+	case "version":
+		fmt.Println(VersionString())
 	case "rm":
 		err := rmCmd.Parse(os.Args[2:])
 		if err != nil {
@@ -79,6 +83,13 @@ func main() {
 		}
 		results := operation.Search(ssCmd.Arg(0))
 		fmt.Println(results.ToString(*ssDetail))
+	case "setting":
+		err := settingCmd.Parse(os.Args[2:])
+		if err != nil {
+			fmt.Println("Usage Error")
+			fmt.Println(Usage())
+		}
+		fmt.Println(operation.ListSettings())
 	}
 }
 
