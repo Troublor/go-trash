@@ -2,14 +2,26 @@
 
 USER_HOME=$(eval echo ~${USER})
 
-INSTALL_PATH="/usr/local/bin"
+BIN_PATH="/usr/local/bin"
 CMD_NAME="gotrash"
+GOTRASH_PATH="/etc/gotrash"
+CONFIG_NAME="gotrash-config.json"
 
-TRASH_DIR="${USER_HOME}/.gotrash"
+if [[ ! -d ${GOTRASH_PATH} ]]; then
+    sudo mkdir -p ${GOTRASH_PATH}
+fi
+if [[ -f ${BIN_PATH}/${CMD_NAME} ]]; then
+    sudo rm ${BIN_PATH}/${CMD_NAME}
+fi
+if [[ -f ${BIN_PATH}/${CONFIG_NAME} ]]; then
+    sudo rm ${BIN_PATH}/${CONFIG_NAME}
+fi
 
-echo "{\"trashDir\":\"${TRASH_DIR}\"}" > /tmp/gotrash-config.json
-go build -o /tmp/${CMD_NAME}
-sudo mv /tmp/${CMD_NAME} ${INSTALL_PATH}/${CMD_NAME}
-sudo chmod 777 -R /${INSTALL_PATH}
-mv /tmp/gotrash-config.json ${INSTALL_PATH}/gotrash-config.json
+echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
+go build -o ${GOTRASH_PATH}/${CMD_NAME}
+sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
+sudo chmod 777 ${BIN_PATH}/${CMD_NAME}
+sudo ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
+sudo chmod 777 ${BIN_PATH}/${CONFIG_NAME}
+sudo chmod 777 -R ${GOTRASH_PATH}
 
