@@ -1,95 +1,79 @@
 package storage
 
 import (
+	"github.com/Troublor/trash-go/errs"
+	"github.com/Troublor/trash-go/system"
 	"github.com/creamdog/gonfig"
 	"github.com/otiai10/copy"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
-	"strconv"
+	"strings"
 )
 
 var config gonfig.Gonfig
 
 func GetTrashCmdDir() string {
-	r, _ := os.Executable()
-	dir, err := filepath.Abs(filepath.Dir(r))
-	if err != nil {
-		panic(err)
+	if system.IsTesting() {
+		return ""
+	} else {
+		r, _ := os.Executable()
+		dir, err := filepath.Abs(filepath.Dir(r))
+		if err != nil {
+			panic(err)
+		}
+		return dir
 	}
-	return dir
+
 }
 
 func GetConfig() gonfig.Gonfig {
-	if config != nil {
-		return config
-	}
-	file, err := os.Open(filepath.Join(GetTrashCmdDir(), "gotrash-config.json"))
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := file.Close()
+	if system.IsTesting() {
+		currentDir, _ := os.Getwd()
+		testPayload := `{"trashDir":"` + currentDir + `"}`
+		s := strings.NewReader(testPayload)
+		config, err := gonfig.FromJson(s)
 		if err != nil {
 			panic(err)
 		}
-	}()
-	config, err = gonfig.FromJson(file)
-	if err != nil {
-		panic(err)
-	}
-	return config
-}
-
-func IsSudo() bool {
-	cmd := exec.Command("id", "-u")
-	output, err := cmd.Output()
-	if err != nil {
-		panic(err)
-	}
-	i, err := strconv.Atoi(string(output[:len(output)-1]))
-	if err != nil {
-		panic(err)
-	}
-	if i == 0 {
-		return false
+		return config
 	} else {
-		return false
+		if config != nil {
+			return config
+		}
+		file, err := os.Open(filepath.Join(GetTrashCmdDir(), "gotrash-config.json"))
+		if err != nil {
+			panic(err)
+		}
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				panic(err)
+			}
+		}()
+		config, err = gonfig.FromJson(file)
+		if err != nil {
+			panic(err)
+		}
+		return config
 	}
+
 }
 
 func GetDbPath() string {
-	if IsSudo() {
-		r, err := GetConfig().GetString("trashDir", "wrong path")
-		if err != nil {
-			panic(err)
-		}
-		return path.Join(r, "root_trash_info.db")
-	} else {
-		r, err := GetConfig().GetString("trashDir", "wrong path")
-		if err != nil {
-			panic(err)
-		}
-		return path.Join(r, "trash_info.db")
+	r, err := GetConfig().GetString("trashDir", "wrong path")
+	if err != nil {
+		panic(err)
 	}
-
+	return path.Join(r, "trash_info.db")
 }
 
 func GetTrashPath() string {
-	if IsSudo() {
-		r, err := GetConfig().GetString("trashDir", "wrong path")
-		if err != nil {
-			panic(err)
-		}
-		return path.Join(r, "root_trash_bin")
-	} else {
-		r, err := GetConfig().GetString("trashDir", "wrong path")
-		if err != nil {
-			panic(err)
-		}
-		return path.Join(r, "trash_bin")
+	r, err := GetConfig().GetString("trashDir", "wrong path")
+	if err != nil {
+		panic(err)
 	}
+	return path.Join(r, "trash_bin")
 }
 
 func GetAbsPath(path string) string {
@@ -101,6 +85,12 @@ func GetAbsPath(path string) string {
 }
 
 func SafeRename(originalPath, targetPath string) error {
+	if _, err := os.Stat(originalPath); err != nil {
+		return errs.ItemNotExistError
+	}
+	if _, err := os.Stat(targetPath); err == nil {
+		return errs.ItemExistError
+	}
 	err := os.Rename(originalPath, targetPath)
 	if err != nil {
 		// rename failed, try copy and delete
@@ -113,5 +103,5 @@ func SafeRename(originalPath, targetPath string) error {
 			return err
 		}
 	}
-	return err
+	return nil
 }

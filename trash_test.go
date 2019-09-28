@@ -4,6 +4,7 @@ import (
 	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/operation"
 	"github.com/Troublor/trash-go/storage"
+	"github.com/Troublor/trash-go/system"
 	"io/ioutil"
 	"os"
 	"path"
@@ -16,6 +17,20 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func TestMain(m *testing.M) {
+	// test context initialization here
+	//system.IsTesting = true
+	exitCode := m.Run()
+	removeTestFiles()
+	os.Exit(exitCode)
+}
+
+func removeTestFiles() {
+	_ = os.RemoveAll("tmp")
+	_ = os.RemoveAll("trash_info.db")
+	_ = os.RemoveAll("trash_bin")
 }
 
 func TestNormalFile(t *testing.T) {
@@ -45,7 +60,7 @@ func TestNormalFile(t *testing.T) {
 	if err != nil {
 		t.Fatal("removed item is not in trash bin")
 	}
-	infos := storage.DbListAllTrashItems()
+	infos := storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) != 1 {
 		t.Fatal("the length of database record is wrong")
 	}
@@ -72,7 +87,7 @@ func TestNormalFile(t *testing.T) {
 	if err != nil {
 		t.Fatal("file is not in the original path")
 	}
-	infos = storage.DbListAllTrashItems()
+	infos = storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) > 0 {
 		t.Fatal("database record is not deleted")
 	}
@@ -125,7 +140,7 @@ func TestEmptyDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal("removed item is not in trash bin")
 	}
-	infos := storage.DbListAllTrashItems()
+	infos := storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) != 1 {
 		t.Fatal("the length of database record is wrong")
 	}
@@ -149,7 +164,7 @@ func TestEmptyDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatal("file is not in the original path")
 	}
-	infos = storage.DbListAllTrashItems()
+	infos = storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) > 0 {
 		t.Fatal("database record is not deleted")
 	}
@@ -214,7 +229,7 @@ func TestNestedDirectory(t *testing.T) {
 	if !info.IsDir() {
 		t.Fatal("item type is wrong")
 	}
-	infos := storage.DbListAllTrashItems()
+	infos := storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) != 1 {
 		t.Fatal("number of records in database is wrong")
 	}
@@ -223,7 +238,8 @@ func TestNestedDirectory(t *testing.T) {
 		infos[0].OriginalPath != originalPath ||
 		infos[0].TrashPath != path.Join(storage.GetTrashPath(), id) ||
 		infos[0].ItemType != storage.TYPE_DIRECTORY ||
-		infos[0].BaseName != path.Base(dirPath1) {
+		infos[0].BaseName != path.Base(dirPath1) ||
+		infos[0].Owner != system.GetUser() {
 		t.Fatal("record information is wrong")
 	}
 	_, err = operation.UnRemove(id, true, false)

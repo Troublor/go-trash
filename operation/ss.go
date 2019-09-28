@@ -2,6 +2,7 @@ package operation
 
 import (
 	"github.com/Troublor/trash-go/storage"
+	"github.com/Troublor/trash-go/system"
 	"regexp"
 	"strings"
 )
@@ -15,7 +16,7 @@ func Search(keyword string) storage.TrashInfoList {
 }
 
 func searchWithPlainString(keyword string) storage.TrashInfoList {
-	results := storage.DbListAllTrashItems()
+	results := storage.DbListAllTrashItems(system.GetUser())
 	sResults := make([]storage.TrashInfo, 0)
 	for _, elem := range results {
 		if strings.Index(elem.BaseName, keyword) >= 0 {
@@ -26,7 +27,7 @@ func searchWithPlainString(keyword string) storage.TrashInfoList {
 }
 
 func searchWithRegexp(re *regexp.Regexp) storage.TrashInfoList {
-	results := storage.DbListAllTrashItems()
+	results := storage.DbListAllTrashItems(system.GetUser())
 	sResults := make([]storage.TrashInfo, 0)
 	for _, elem := range results {
 		if re.MatchString(elem.BaseName) {

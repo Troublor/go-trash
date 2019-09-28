@@ -11,6 +11,7 @@ type TrashInfo struct {
 	TrashPath    string
 	BaseName     string
 	ItemType     string
+	Owner        string
 	DeleteTime   time.Time
 }
 
@@ -27,6 +28,10 @@ func (trashInfo TrashInfo) isFile() bool {
 	return trashInfo.ItemType == TYPE_FILE
 }
 
+func (trashInfo TrashInfo) OwnedBy(owner string) bool {
+	return trashInfo.Owner == owner
+}
+
 type TrashInfoList []TrashInfo
 
 func (list TrashInfoList) ToString(detailed bool) string {
@@ -41,6 +46,7 @@ func (list TrashInfoList) ToString(detailed bool) string {
 				elem.BaseName,
 				elem.OriginalPath,
 				elem.ItemType,
+				elem.Owner,
 				elem.DeleteTime,
 				elem.TrashPath,
 			})
@@ -54,7 +60,7 @@ func (list TrashInfoList) ToString(detailed bool) string {
 	}
 	t := gotabulate.Create(payload)
 	if detailed {
-		t.SetHeaders([]string{"Index", "Basename", "Original Path", "Type", "Delete Time", "Trash Path"})
+		t.SetHeaders([]string{"Index", "Basename", "Original Path", "Type", "Owner", "Delete Time", "Trash Path"})
 	} else {
 		t.SetHeaders([]string{"Index", "Basename", "Original Path"})
 	}

@@ -10,6 +10,7 @@ var MultipleItemsError error
 var DirectoryNotEmptyError error
 var IsDirectoryError error
 var IsFileError error
+var PermissionError error
 
 func init() {
 	ItemNotExistError = errors.New("item not exists")
@@ -18,4 +19,5 @@ func init() {
 	DirectoryNotEmptyError = errors.New("the directory is not empty")
 	IsDirectoryError = errors.New("the item is a directory")
 	IsFileError = errors.New("the item is a file")
+	PermissionError = errors.New("permission denied")
 }

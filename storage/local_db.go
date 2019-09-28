@@ -6,9 +6,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/Troublor/trash-go/errs"
+	"github.com/Troublor/trash-go/system"
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
+	"os/exec"
 	"path"
 	"time"
 )
@@ -28,6 +30,15 @@ func init() {
 	if err != nil {
 		panic(err.Error())
 	}
+	defer func() {
+		if system.IsSudo() {
+			cmd := exec.Command("sudo chmod 777 -R " + GetDbPath())
+			_, err := cmd.Output()
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
 	// Create Settings table if it does not exist
 	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS settings (setting_key TEXT PRIMARY KEY, setting_value TEXT)")
 	if err != nil {
@@ -44,7 +55,7 @@ func init() {
 		panic(err.Error())
 	}
 	//Create trash_info table if it does not exist
-	statement, err = database.Prepare("CREATE TABLE IF NOT EXISTS trash_info (id TEXT PRIMARY KEY, original_path TEXT, trash_path TEXT, base_name TEXT, item_type TEXT, delete_time TIMESTAMP )")
+	statement, err = database.Prepare("CREATE TABLE IF NOT EXISTS trash_info (id TEXT PRIMARY KEY, original_path TEXT, trash_path TEXT, base_name TEXT, item_type TEXT, owner TEXT, delete_time TIMESTAMP )")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -128,7 +139,7 @@ func UpdateSetting(key string, value string) error {
 	}
 }
 
-func DbInsertTrashItem(originalPath, trashDir, baseName, itemType string) string {
+func DbInsertTrashItem(originalPath, trashDir, baseName, itemType string, owner string) string {
 	if itemType != TYPE_FILE && itemType != TYPE_DIRECTORY {
 		panic(errors.New("invalid value for argument itemType: " + itemType))
 	}
@@ -136,7 +147,7 @@ func DbInsertTrashItem(originalPath, trashDir, baseName, itemType string) string
 	hasher := md5.New()
 	hasher.Write([]byte(deleteTime))
 	id := hex.EncodeToString(hasher.Sum(nil))[:6]
-	statement, err := database.Prepare("INSERT INTO trash_info (id, original_path, trash_path, base_name, item_type, delete_time) VALUES (?, ?, ?, ?, ?, ?)")
+	statement, err := database.Prepare("INSERT INTO trash_info (id, original_path, trash_path, base_name, item_type, owner, delete_time) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -147,14 +158,14 @@ func DbInsertTrashItem(originalPath, trashDir, baseName, itemType string) string
 		}
 	}(statement)
 	trashPath := path.Join(trashDir, id)
-	_, err = statement.Exec(id, originalPath, trashPath, baseName, itemType, deleteTime)
+	_, err = statement.Exec(id, originalPath, trashPath, baseName, itemType, owner, deleteTime)
 	if err != nil {
 		panic(err.Error())
 	}
 	return id
 }
 
-func DbListAllTrashItems() TrashInfoList {
+func DbListAllTrashItems(user string) TrashInfoList {
 	rows, err := database.Query("SELECT * FROM trash_info")
 	if err != nil {
 		panic(err.Error())
@@ -167,13 +178,15 @@ func DbListAllTrashItems() TrashInfoList {
 	}(rows)
 	var results []TrashInfo
 	for rows.Next() {
-		var id, originalPath, trashPath, baseName, itemType string
+		var id, originalPath, trashPath, baseName, itemType, owner string
 		var deleteTime time.Time
-		err = rows.Scan(&id, &originalPath, &trashPath, &baseName, &itemType, &deleteTime)
+		err = rows.Scan(&id, &originalPath, &trashPath, &baseName, &itemType, &owner, &deleteTime)
 		if err != nil {
 			panic(err.Error())
 		}
-		results = append(results, TrashInfo{Id: id, OriginalPath: originalPath, TrashPath: trashPath, BaseName: baseName, ItemType: itemType, DeleteTime: deleteTime})
+		if user == "root" || user == owner {
+			results = append(results, TrashInfo{Id: id, OriginalPath: originalPath, TrashPath: trashPath, BaseName: baseName, ItemType: itemType, Owner: owner, DeleteTime: deleteTime})
+		}
 	}
 	err = rows.Err()
 	if err != nil {
@@ -182,8 +195,30 @@ func DbListAllTrashItems() TrashInfoList {
 	return results
 }
 
-func DbDeleteTrashItem(id string) error {
-	statement, err := database.Prepare("DELETE FROM trash_info WHERE id = ?")
+func DbDeleteTrashItem(id string, user string) error {
+	statement, err := database.Prepare("SELECT owner FROM trash_info WHERE id = ?")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer func(s *sql.Stmt) {
+		err := s.Close()
+		if err != nil {
+			panic(err.Error())
+		}
+	}(statement)
+	var owner string
+	err = statement.QueryRow(id).Scan(&owner)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errs.ItemNotExistError
+		} else {
+			return err
+		}
+	}
+	if owner != user {
+		return errs.PermissionError
+	}
+	statement, err = database.Prepare("DELETE FROM trash_info WHERE id = ?")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -207,8 +242,8 @@ func DbDeleteTrashItem(id string) error {
 	return nil
 }
 
-func DbGetTrashItemById(id string) (*TrashInfo, error) {
-	statement, err := database.Prepare("SELECT original_path, trash_path, base_name, item_type, delete_time FROM trash_info WHERE id = ?")
+func DbGetTrashItemById(id string, user string) (*TrashInfo, error) {
+	statement, err := database.Prepare("SELECT original_path, trash_path, base_name, item_type, owner, delete_time FROM trash_info WHERE id = ?")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -218,13 +253,16 @@ func DbGetTrashItemById(id string) (*TrashInfo, error) {
 			panic(err.Error())
 		}
 	}(statement)
-	var originalPath, trashPath, baseName, itemType string
+	var originalPath, trashPath, baseName, itemType, owner string
 	var deleteTime time.Time
-	err = statement.QueryRow(id).Scan(&originalPath, &trashPath, &baseName, &itemType, &deleteTime)
+	err = statement.QueryRow(id).Scan(&originalPath, &trashPath, &baseName, &itemType, &owner, &deleteTime)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &TrashInfo{}, errors.New("item with id " + id + " does not exist")
+			return &TrashInfo{}, errs.ItemNotExistError
 		}
 	}
-	return &TrashInfo{Id: id, OriginalPath: originalPath, TrashPath: trashPath, BaseName: baseName, ItemType: itemType, DeleteTime: deleteTime}, nil
+	if user != owner {
+		return &TrashInfo{}, errs.PermissionError
+	}
+	return &TrashInfo{Id: id, OriginalPath: originalPath, TrashPath: trashPath, BaseName: baseName, ItemType: itemType, Owner: owner, DeleteTime: deleteTime}, nil
 }

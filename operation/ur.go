@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/storage"
+	"github.com/Troublor/trash-go/system"
 	"os"
 )
 
@@ -16,7 +17,7 @@ func UnRemove(payload string, isId bool, override bool) (*storage.TrashInfo, err
 }
 
 func unRemoveById(id string, override bool) (*storage.TrashInfo, error) {
-	trashInfo, err := storage.DbGetTrashItemById(id)
+	trashInfo, err := storage.DbGetTrashItemById(id, system.GetUser())
 	if err != nil {
 		return trashInfo, errs.ItemNotExistError
 	}
@@ -36,7 +37,7 @@ func unRemoveById(id string, override bool) (*storage.TrashInfo, error) {
 		}
 	}
 	// delete information in database
-	err = storage.DbDeleteTrashItem(id)
+	err = storage.DbDeleteTrashItem(id, system.GetUser())
 	if err != nil {
 		return trashInfo, errs.ItemNotExistError
 	}
@@ -49,7 +50,7 @@ func unRemoveById(id string, override bool) (*storage.TrashInfo, error) {
 func unRemoveByName(name string, override bool) (*storage.TrashInfo, error) {
 	count := 0
 	var id string
-	items := storage.DbListAllTrashItems()
+	items := storage.DbListAllTrashItems(system.GetUser())
 	for _, item := range items {
 		if item.BaseName == name {
 			count += 1

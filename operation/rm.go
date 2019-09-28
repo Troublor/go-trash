@@ -3,6 +3,7 @@ package operation
 import (
 	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/storage"
+	"github.com/Troublor/trash-go/system"
 	"io"
 	"os"
 	"path"
@@ -32,7 +33,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 			return "", errs.IsDirectoryError
 		}
 		// add information in database
-		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE)
+		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE, system.GetUser())
 		// move the item into trash directory
 		err := storage.SafeRename(itemPath, path.Join(trashDir, id))
 		if err != nil {
@@ -51,7 +52,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 			return "", errs.DirectoryNotEmptyError
 		}
 		// add information in database
-		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY)
+		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY, system.GetUser())
 		// move the item into trash directory
 		err = storage.SafeRename(itemPath, path.Join(trashDir, id))
 		if err != nil {

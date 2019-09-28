@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestCrossDriveRemove(t *testing.T) {
+func TestCrossDriverRemove(t *testing.T) {
 	filePath := "/var/www/file.txt"
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -87,4 +87,10 @@ func TestCrossDriveRemove(t *testing.T) {
 	if _, err = os.Stat(dirPath1); err != nil {
 		t.Fatal("un-remove unfinished")
 	}
+}
+
+func TestToRemoveTestFiles(t *testing.T) {
+	_ = os.RemoveAll("tmp")
+	_ = os.RemoveAll("trash_info.db")
+	_ = os.RemoveAll("trash_bin")
 }
