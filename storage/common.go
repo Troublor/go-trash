@@ -53,7 +53,7 @@ func IsSudo() bool {
 		panic(err)
 	}
 	if i == 0 {
-		return true
+		return false
 	} else {
 		return false
 	}
