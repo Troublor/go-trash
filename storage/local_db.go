@@ -17,9 +17,9 @@ import (
 
 var database *sql.DB
 
-func init() {
+func initDB() {
 	initializeSettings := func() {
-		for key, value := range defaultSettings {
+		for key, value := range DefaultSettings {
 			err := AddSetting(key, value)
 			if err != nil && err != errs.ItemExistError {
 				panic(err)
@@ -168,7 +168,7 @@ func ListAllSettings() SettingList {
 		if err != nil {
 			panic(err.Error())
 		}
-		results = append(results, Setting{key: key, value: value})
+		results = append(results, *NewSetting(key, value))
 	}
 	err = rows.Err()
 	if err != nil {

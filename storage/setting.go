@@ -1,12 +1,18 @@
 package storage
 
-import "strings"
+import (
+	"strings"
+)
 
-var defaultSettings = map[string]string{"autoremove": "off"}
+var DefaultSettings = map[string]string{"autoremove": "off"}
 
 type Setting struct {
 	key   string
 	value string
+}
+
+func NewSetting(key, value string) *Setting {
+	return &Setting{key: key, value: value}
 }
 
 func (setting *Setting) SetValue(value string) error {

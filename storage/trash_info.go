@@ -32,7 +32,29 @@ func (trashInfo TrashInfo) OwnedBy(owner string) bool {
 	return trashInfo.Owner == owner
 }
 
+func (trashInfo TrashInfo) Equals(info TrashInfo) bool {
+	return trashInfo.OriginalPath == info.OriginalPath &&
+		trashInfo.DeleteTime.Equal(info.DeleteTime)
+}
+
 type TrashInfoList []TrashInfo
+
+func (list TrashInfoList) Contains(info TrashInfo) bool {
+	for _, trash := range list {
+		if trash.Equals(info) {
+			return true
+		}
+	}
+	return false
+}
+
+func (list *TrashInfoList) Merge(anotherList TrashInfoList) {
+	for _, info := range anotherList {
+		if !list.Contains(info) {
+			*list = append(*list, info)
+		}
+	}
+}
 
 func (list TrashInfoList) ToString(detailed bool) string {
 	if len(list) == 0 {

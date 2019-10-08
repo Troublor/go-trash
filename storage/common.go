@@ -13,6 +13,10 @@ import (
 
 var config gonfig.Gonfig
 
+func InitStorage() {
+	initDB()
+}
+
 func GetTrashCmdDir() string {
 	if system.IsTesting() {
 		return ""

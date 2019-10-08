@@ -1,11 +1,33 @@
-package operation
+package cmd
 
 import (
+	"fmt"
 	"github.com/Troublor/trash-go/storage"
 	"github.com/Troublor/trash-go/system"
+	"github.com/spf13/cobra"
 	"regexp"
 	"strings"
 )
+
+var verboseSs bool
+
+var ssCmd = &cobra.Command{
+	Use:   "ss [-v]",
+	Short: "Search trash in trash bin",
+	Long:  `Search trash in trash bin`,
+	Run: func(cmd *cobra.Command, args []string) {
+		results := &storage.TrashInfoList{}
+		for _, kw := range args {
+			results.Merge(Search(kw))
+		}
+		fmt.Println(results.ToString(verboseSs))
+	},
+}
+
+func init() {
+	ssCmd.Flags().BoolVarP(&verboseSs, "verbose", "v", false,
+		"show the detail of searched items in trash bin")
+}
 
 func Search(keyword string) storage.TrashInfoList {
 	re, err := regexp.Compile(keyword)

@@ -1,14 +1,42 @@
-package operation
+package cmd
 
 import (
+	"fmt"
 	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/storage"
 	"github.com/Troublor/trash-go/system"
+	"github.com/spf13/cobra"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 )
+
+var recursive bool
+var directory bool
+
+var rmCmd = &cobra.Command{
+	Use:   "rm [-d]|[-r]",
+	Short: "Remove the files or directories by putting them in trash bin",
+	Long:  `Remove the files or directories by putting them in trash bin`,
+	Run: func(cmd *cobra.Command, args []string) {
+		for _, itemPath := range args {
+			id, err := Remove(itemPath, directory, recursive)
+			if err != nil {
+				fmt.Println("Remove Error: " + err.Error())
+			} else {
+				fmt.Println("remove " + itemPath + " complete, trash id = " + id)
+			}
+		}
+	},
+}
+
+func init() {
+	rmCmd.Flags().BoolVarP(&recursive, "recursive", "r", false,
+		"recursively remove files in directory")
+	rmCmd.Flags().BoolVarP(&directory, "directory", "d", false,
+		"Remove directory")
+}
 
 func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 	trashDir := storage.GetTrashPath()

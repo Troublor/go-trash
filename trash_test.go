@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/Troublor/trash-go/cmd"
 	"github.com/Troublor/trash-go/errs"
-	"github.com/Troublor/trash-go/operation"
 	"github.com/Troublor/trash-go/storage"
 	"github.com/Troublor/trash-go/system"
 	"io/ioutil"
@@ -12,18 +12,16 @@ import (
 	"testing"
 )
 
-func init() {
+func TestMain(m *testing.M) {
+	// test context initialization here
+	//system.IsTesting = true
+	storage.InitStorage()
 	err := os.Mkdir("tmp", os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-}
-
-func TestMain(m *testing.M) {
-	// test context initialization here
-	//system.IsTesting = true
 	exitCode := m.Run()
-	removeTestFiles()
+	defer removeTestFiles()
 	os.Exit(exitCode)
 }
 
@@ -43,11 +41,11 @@ func TestNormalFile(t *testing.T) {
 	defer func() {
 		_ = os.Remove(filePath)
 	}()
-	_, err = operation.Remove(filePath, true, false)
+	_, err = cmd.Remove(filePath, true, false)
 	if err != errs.IsFileError {
 		panic("report wrong error type")
 	}
-	id, err := operation.Remove(filePath, false, false)
+	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
 		t.Fatal("remove error: " + err.Error())
 	}
@@ -75,7 +73,7 @@ func TestNormalFile(t *testing.T) {
 		infos[0].ItemType != storage.TYPE_FILE {
 		t.Fatal("database record error")
 	}
-	trashInfo, err := operation.UnRemove(id, true, false)
+	trashInfo, err := cmd.UnRemove(id, true, false)
 	if err != nil {
 		t.Fatal("un-remove error")
 	}
@@ -94,14 +92,14 @@ func TestNormalFile(t *testing.T) {
 }
 
 func TestWrongFilePath(t *testing.T) {
-	_, err := operation.Remove("path/not/exist", false, false)
+	_, err := cmd.Remove("path/not/exist", false, false)
 	if err == nil {
 		t.Fatal("don't report file not exist error")
 	}
 	if err != errs.ItemNotExistError {
 		t.Fatal("report a wrong error type")
 	}
-	_, err = operation.UnRemove("non-exist", false, false)
+	_, err = cmd.UnRemove("non-exist", false, false)
 	if err == nil {
 		t.Fatal("don't report file not exist error")
 	}
@@ -120,14 +118,14 @@ func TestEmptyDirectory(t *testing.T) {
 	defer func() {
 		_ = os.Remove(dirPath)
 	}()
-	_, err = operation.Remove(dirPath, false, false)
+	_, err = cmd.Remove(dirPath, false, false)
 	if err == nil {
 		t.Fatal("delete directory when it shouldn't")
 	}
 	if err != errs.IsDirectoryError {
 		t.Fatal("report wrong error type")
 	}
-	id, err := operation.Remove(dirPath, true, false)
+	id, err := cmd.Remove(dirPath, true, false)
 	if err != nil {
 		t.Fatal("remove directory failed")
 	}
@@ -152,7 +150,7 @@ func TestEmptyDirectory(t *testing.T) {
 		infos[0].ItemType != storage.TYPE_DIRECTORY {
 		t.Fatal("database record error")
 	}
-	trashInfo, err := operation.UnRemove(id, true, false)
+	trashInfo, err := cmd.UnRemove(id, true, false)
 	if err != nil {
 		t.Fatal("un-remove error")
 	}
@@ -210,15 +208,15 @@ func TestNestedDirectory(t *testing.T) {
 		panic(err)
 	}
 
-	_, err = operation.Remove(dirPath1, false, false)
+	_, err = cmd.Remove(dirPath1, false, false)
 	if err == nil {
 		t.Fatal("remove dir when it shouldn't")
 	}
-	_, err = operation.Remove(dirPath1, true, false)
+	_, err = cmd.Remove(dirPath1, true, false)
 	if err == nil {
 		t.Fatal("remove a non-empty dir when it shouldn't")
 	}
-	id, err := operation.Remove(dirPath1, true, true)
+	id, err := cmd.Remove(dirPath1, true, true)
 	if err != nil {
 		t.Fatal("remove dir failed")
 	}
@@ -242,7 +240,7 @@ func TestNestedDirectory(t *testing.T) {
 		infos[0].Owner != system.GetUser() {
 		t.Fatal("record information is wrong")
 	}
-	_, err = operation.UnRemove(id, true, false)
+	_, err = cmd.UnRemove(id, true, false)
 	if err != nil {
 		t.Fatal("un-remove failed")
 	}
@@ -265,7 +263,7 @@ func TestOverride(t *testing.T) {
 		panic(err)
 	}
 	_ = file.Close()
-	id, err := operation.Remove(filePath, false, false)
+	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
 		t.Fatal("remove failed")
 	}
@@ -274,13 +272,13 @@ func TestOverride(t *testing.T) {
 		panic(err)
 	}
 	_ = file.Close()
-	_, err = operation.UnRemove(id, true, false)
+	_, err = cmd.UnRemove(id, true, false)
 	if err == nil {
 		t.Fatal("override when it shouldn't")
 	} else if err != errs.ItemExistError {
 		t.Fatal("report wrong error")
 	}
-	_, err = operation.UnRemove(id, true, true)
+	_, err = cmd.UnRemove(id, true, true)
 	if err != nil {
 		t.Fatal("un-remove failed")
 	}

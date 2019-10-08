@@ -1,12 +1,16 @@
 package main
 
 import (
-	"github.com/Troublor/trash-go/operation"
+	"github.com/Troublor/trash-go/cmd"
 	"github.com/Troublor/trash-go/storage"
 	"os"
 	"path"
 	"testing"
 )
+
+func TestInit(t *testing.T) {
+	storage.InitStorage()
+}
 
 func TestCrossDriverRemove(t *testing.T) {
 	filePath := "/var/www/file.txt"
@@ -19,14 +23,14 @@ func TestCrossDriverRemove(t *testing.T) {
 	}()
 	_, _ = file.WriteString("123")
 	_ = file.Close()
-	id, err := operation.Remove(filePath, false, false)
+	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
 		t.Fatal("remove failed")
 	}
 	if _, err = os.Stat(path.Join(storage.GetTrashPath(), id)); err != nil {
 		t.Fatal("remove unfinished")
 	}
-	_, err = operation.UnRemove(id, true, false)
+	_, err = cmd.UnRemove(id, true, false)
 	if err != nil {
 		t.Fatal("un-remove failed")
 	}
@@ -73,14 +77,14 @@ func TestCrossDriverRemove(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	id, err = operation.Remove(dirPath1, true, true)
+	id, err = cmd.Remove(dirPath1, true, true)
 	if err != nil {
 		t.Fatal("remove failed")
 	}
 	if _, err = os.Stat(dirPath1); err == nil {
 		t.Fatal("remove unfinished")
 	}
-	_, err = operation.UnRemove(id, true, false)
+	_, err = cmd.UnRemove(id, true, false)
 	if err != nil {
 		t.Fatal("un-remove failed")
 	}

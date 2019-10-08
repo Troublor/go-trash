@@ -1,12 +1,49 @@
-package operation
+package cmd
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Troublor/trash-go/errs"
 	"github.com/Troublor/trash-go/storage"
 	"github.com/Troublor/trash-go/system"
+	"github.com/spf13/cobra"
 	"os"
 )
+
+var id bool
+var override bool
+
+var urCmd = &cobra.Command{
+	Use:   "ur [-i]|[-o]",
+	Short: "Un-remove: retrieve files or directories from trash bin",
+	Long:  `Un-remove: retrieve files or directories from trash bin`,
+	Run: func(cmd *cobra.Command, args []string) {
+		for _, payload := range args {
+			trashInfo, err := UnRemove(payload, id, override)
+			if err != nil {
+				switch err {
+				case errs.ItemNotExistError:
+					fmt.Println("UnRemove Error: " + "can not find " + payload + " in trash bin")
+				case errs.ItemExistError:
+					fmt.Println("UnRemove Error: " + "a file or directory already exists in original path of " + payload + ", please try again with option -o")
+				case errs.MultipleItemsError:
+					fmt.Println("UnRemove Error: " + "multiple items named '" + payload + "' found in trash bin, please specify trash id to retrieve")
+				default:
+					fmt.Println("UnRemove Error: " + "retrieve failed")
+				}
+			} else {
+				fmt.Printf("retrieve %s to %s\n", trashInfo.BaseName, trashInfo.OriginalPath)
+			}
+		}
+	},
+}
+
+func init() {
+	urCmd.Flags().BoolVarP(&id, "id", "i", false,
+		"use id of the item to retrieve (un-remove) item from trash bin")
+	urCmd.Flags().BoolVarP(&override, "override", "o", false,
+		"override the existing file when retrieve (un-remove) items")
+}
 
 func UnRemove(payload string, isId bool, override bool) (*storage.TrashInfo, error) {
 	if isId {
