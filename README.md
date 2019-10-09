@@ -6,13 +6,13 @@ A trash files and directories management tool for Linux command line.
 
 - Remove files and directories by moving them in to a trash bin
 - Retrieve files and directories by moving them out of trash bin to original path
+- Redirect the files or directories to un-remove to the retrieving target location
 - List all items in trash bin
 - Search for items in trash bin
 - User isolation: different users have their own trash bin which doesn't interfere with each other. Root users can see all trash items. 
 
 ## Features to Come
 
-- Redirect the retrieving target loaction
 - Auto clearance of trash bin
 
 ## Installation
