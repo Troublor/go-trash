@@ -18,9 +18,11 @@ func TestMain(m *testing.M) {
 	//system.IsTesting = true
 	storage.InitStorage()
 	_ = os.Mkdir("tmp", os.ModePerm)
+	_ = os.Chdir("tmp")
 	_ = service.EventHappen("onTestStart")
 	exitCode := m.Run()
 	_ = service.EventHappen("onTestEnd")
+	_ = os.Chdir("..")
 	_ = os.RemoveAll("tmp")
 	_ = os.RemoveAll("trash_info.db")
 	_ = os.RemoveAll("trash_bin")
@@ -28,16 +30,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestNormalFile(t *testing.T) {
-	filePath := "tmp/abc.txt"
-	file, err := os.Create(filePath)
-	if err != nil {
-		panic(err)
-	}
-	_ = file.Close()
-	defer func() {
-		_ = os.Remove(filePath)
-	}()
-	_, err = cmd.Remove(filePath, true, false)
+	filePath := "abc.txt"
+	createTestFileAndClose(filePath, "123")
+	defer removeTestFile(filePath)
+	_, err := cmd.Remove(filePath, true, false)
 	if err != errs.IsFileError {
 		panic("report wrong error type")
 	}
@@ -105,16 +101,10 @@ func TestWrongFilePath(t *testing.T) {
 }
 
 func TestEmptyDirectory(t *testing.T) {
-
-	dirPath := "tmp/test_dir"
-	err := os.Mkdir(dirPath, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(dirPath)
-	}()
-	_, err = cmd.Remove(dirPath, false, false)
+	dirPath := "test_dir"
+	createTestDir(dirPath)
+	defer removeTestDir(dirPath)
+	_, err := cmd.Remove(dirPath, false, false)
 	if err == nil {
 		t.Fatal("delete directory when it shouldn't")
 	}
@@ -165,46 +155,17 @@ func TestEmptyDirectory(t *testing.T) {
 }
 
 func TestNestedDirectory(t *testing.T) {
-	dirPath1, dirPath2 := "tmp/parent", "child"
+	dirPath1, dirPath2 := "parent", "child"
 	filePath1, filePath2 := "file1.txt", "file2.txt"
-	err := os.Mkdir(dirPath1, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(dirPath1)
-	}()
-	err = os.Mkdir(path.Join(dirPath1, dirPath2), os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(path.Join(dirPath1, dirPath2))
-	}()
-	file, err := os.Create(path.Join(dirPath1, filePath1))
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(path.Join(dirPath1, filePath1))
-	}()
-	err = file.Close()
-	if err != nil {
-		panic(err)
-	}
-	file, err = os.Create(path.Join(dirPath1, dirPath2, filePath2))
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(path.Join(dirPath1, dirPath2, filePath2))
-	}()
-	err = file.Close()
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = cmd.Remove(dirPath1, false, false)
+	createTestDir(dirPath1)
+	defer removeTestDir(dirPath1)
+	createTestDir(filepath.Join(dirPath1, dirPath2))
+	defer removeTestDir(filepath.Join(dirPath1, dirPath2))
+	createTestFileAndClose(filepath.Join(dirPath1, filePath1), "")
+	defer removeTestFile(filepath.Join(dirPath1, filePath1))
+	createTestFileAndClose(path.Join(dirPath1, dirPath2, filePath2), "")
+	defer removeTestFile(path.Join(dirPath1, dirPath2, filePath2))
+	_, err := cmd.Remove(dirPath1, false, false)
 	if err == nil {
 		t.Fatal("remove dir when it shouldn't")
 	}
@@ -246,28 +207,14 @@ func TestNestedDirectory(t *testing.T) {
 	}
 }
 func TestOverride(t *testing.T) {
-	filePath := "tmp/file.txt"
-	file, err := os.Create(filePath)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = os.Remove(filePath)
-	}()
-	_, err = file.WriteString("abc")
-	if err != nil {
-		panic(err)
-	}
-	_ = file.Close()
+	filePath := "file.txt"
+	createTestFileAndClose(filePath, "abc")
+	defer removeTestFile(filePath)
 	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
 		t.Fatal("remove failed")
 	}
-	file, err = os.Create(filePath)
-	if err != nil {
-		panic(err)
-	}
-	_ = file.Close()
+	createTestFileAndClose(filePath, "")
 	_, err = cmd.UnRemove(id, true, false, "/original", false)
 	if err == nil {
 		t.Fatal("override when it shouldn't")
@@ -287,7 +234,7 @@ func TestOverride(t *testing.T) {
 	}
 }
 
-func newTestFile(filePath, content string) *os.File {
+func createTestFile(filePath, content string) *os.File {
 	file, err := os.Create(filePath)
 	if err != nil {
 		panic(err)
@@ -296,20 +243,31 @@ func newTestFile(filePath, content string) *os.File {
 	if err != nil {
 		panic(err)
 	}
+	if len(content) > 0 {
+		_, err = file.WriteString(content)
+		if err != nil {
+			panic(err)
+		}
+	}
 	return file
 }
 
-func removeTestFile(filePath string) {
-	_ = os.Remove(filepath.Join("tmp", filePath))
+func createTestFileAndClose(filePath, content string) {
+	file := createTestFile(filePath, content)
+	_ = file.Close()
 }
 
-func newTestDir(dirPath string) {
-	err := os.MkdirAll(filepath.Join("tmp", dirPath), os.ModePerm)
+func removeTestFile(filePath string) {
+	_ = os.Remove(filePath)
+}
+
+func createTestDir(dirPath string) {
+	err := os.MkdirAll(dirPath, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func removeTestDir(dirPath string) {
-	_ = os.RemoveAll(filepath.Join("tmp", dirPath))
+	_ = os.RemoveAll(dirPath)
 }
