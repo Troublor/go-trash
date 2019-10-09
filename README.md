@@ -17,7 +17,7 @@ A trash files and directories management tool for Linux command line.
 
 ## Installation
 
-**The installation of Go-trash requires root authority.**
+**The installation of Go-trash requires root authentication.**
 
 ```
 git clone https://github.com/Troublor/trash-go.git
