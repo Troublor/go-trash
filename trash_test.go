@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Troublor/trash-go/cmd"
 	"github.com/Troublor/trash-go/errs"
+	"github.com/Troublor/trash-go/service"
 	"github.com/Troublor/trash-go/storage"
 	"github.com/Troublor/trash-go/system"
 	"io/ioutil"
@@ -16,19 +17,14 @@ func TestMain(m *testing.M) {
 	// test context initialization here
 	//system.IsTesting = true
 	storage.InitStorage()
-	err := os.Mkdir("tmp", os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
+	_ = os.Mkdir("tmp", os.ModePerm)
+	_ = service.EventHappen("onTestStart")
 	exitCode := m.Run()
-	defer removeTestFiles()
-	os.Exit(exitCode)
-}
-
-func removeTestFiles() {
+	_ = service.EventHappen("onTestEnd")
 	_ = os.RemoveAll("tmp")
 	_ = os.RemoveAll("trash_info.db")
 	_ = os.RemoveAll("trash_bin")
+	os.Exit(exitCode)
 }
 
 func TestNormalFile(t *testing.T) {
@@ -73,7 +69,7 @@ func TestNormalFile(t *testing.T) {
 		infos[0].ItemType != storage.TYPE_FILE {
 		t.Fatal("database record error")
 	}
-	trashInfo, err := cmd.UnRemove(id, true, false)
+	trashInfo, err := cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
 		t.Fatal("un-remove error")
 	}
@@ -99,7 +95,7 @@ func TestWrongFilePath(t *testing.T) {
 	if err != errs.ItemNotExistError {
 		t.Fatal("report a wrong error type")
 	}
-	_, err = cmd.UnRemove("non-exist", false, false)
+	_, err = cmd.UnRemove("non-exist", false, false, "/original", false)
 	if err == nil {
 		t.Fatal("don't report file not exist error")
 	}
@@ -150,7 +146,7 @@ func TestEmptyDirectory(t *testing.T) {
 		infos[0].ItemType != storage.TYPE_DIRECTORY {
 		t.Fatal("database record error")
 	}
-	trashInfo, err := cmd.UnRemove(id, true, false)
+	trashInfo, err := cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
 		t.Fatal("un-remove error")
 	}
@@ -240,7 +236,7 @@ func TestNestedDirectory(t *testing.T) {
 		infos[0].Owner != system.GetUser() {
 		t.Fatal("record information is wrong")
 	}
-	_, err = cmd.UnRemove(id, true, false)
+	_, err = cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
 		t.Fatal("un-remove failed")
 	}
@@ -272,13 +268,13 @@ func TestOverride(t *testing.T) {
 		panic(err)
 	}
 	_ = file.Close()
-	_, err = cmd.UnRemove(id, true, false)
+	_, err = cmd.UnRemove(id, true, false, "/original", false)
 	if err == nil {
 		t.Fatal("override when it shouldn't")
 	} else if err != errs.ItemExistError {
 		t.Fatal("report wrong error")
 	}
-	_, err = cmd.UnRemove(id, true, true)
+	_, err = cmd.UnRemove(id, true, true, "/original", false)
 	if err != nil {
 		t.Fatal("un-remove failed")
 	}
@@ -289,4 +285,31 @@ func TestOverride(t *testing.T) {
 	if string(data) != "abc" {
 		t.Fatal("not the original file")
 	}
+}
+
+func newTestFile(filePath, content string) *os.File {
+	file, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	_, err = file.WriteString("abc")
+	if err != nil {
+		panic(err)
+	}
+	return file
+}
+
+func removeTestFile(filePath string) {
+	_ = os.Remove(filepath.Join("tmp", filePath))
+}
+
+func newTestDir(dirPath string) {
+	err := os.MkdirAll(filepath.Join("tmp", dirPath), os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func removeTestDir(dirPath string) {
+	_ = os.RemoveAll(filepath.Join("tmp", dirPath))
 }
