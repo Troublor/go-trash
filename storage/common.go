@@ -32,19 +32,20 @@ func GetTrashCmdDir() string {
 }
 
 func GetConfig() gonfig.Gonfig {
+	if config != nil {
+		return config
+	}
 	if system.IsTesting() {
 		currentDir, _ := os.Getwd()
 		testPayload := `{"trashDir":"` + currentDir + `"}`
 		s := strings.NewReader(testPayload)
-		config, err := gonfig.FromJson(s)
+		var err error
+		config, err = gonfig.FromJson(s)
 		if err != nil {
 			panic(err)
 		}
 		return config
 	} else {
-		if config != nil {
-			return config
-		}
 		file, err := os.Open(filepath.Join(GetTrashCmdDir(), "gotrash-config.json"))
 		if err != nil {
 			panic(err)

@@ -107,7 +107,7 @@ func unRemoveById(id string, override bool, target string, parent bool) (*storag
 	if err != nil {
 		return trashInfo, errs.ItemNotExistError
 	}
-	err = storage.SafeRename(trashInfo.TrashPath, trashInfo.OriginalPath)
+	err = storage.SafeRename(trashInfo.TrashPath, targetPath)
 	if err != nil {
 		panic(err)
 	}

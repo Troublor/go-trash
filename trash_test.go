@@ -17,16 +17,13 @@ func TestMain(m *testing.M) {
 	// test context initialization here
 	//system.IsTesting = true
 	storage.InitStorage()
-	_ = os.Mkdir("tmp", os.ModePerm)
-	_ = os.Chdir("tmp")
+	createTestDir("tmp")
+	defer removeTestDir("tmp")
+	os.Chdir("tmp")
+	defer os.Chdir("..")
 	_ = service.EventHappen("onTestStart")
-	exitCode := m.Run()
+	_ = m.Run()
 	_ = service.EventHappen("onTestEnd")
-	_ = os.Chdir("..")
-	_ = os.RemoveAll("tmp")
-	_ = os.RemoveAll("trash_info.db")
-	_ = os.RemoveAll("trash_bin")
-	os.Exit(exitCode)
 }
 
 func TestNormalFile(t *testing.T) {
@@ -39,20 +36,20 @@ func TestNormalFile(t *testing.T) {
 	}
 	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
-		t.Fatal("remove error: " + err.Error())
+		t.Error("remove error: " + err.Error())
 	}
 	_, err = os.Stat(filePath)
 	if err == nil {
-		t.Fatal("didn't remove")
+		t.Error("didn't remove")
 	}
 	trashPath := path.Join(storage.GetTrashPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
-		t.Fatal("removed item is not in trash bin")
+		t.Error("removed item is not in trash bin")
 	}
 	infos := storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) != 1 {
-		t.Fatal("the length of database record is wrong")
+		t.Error("the length of database record is wrong")
 	}
 	absFilePath, err := filepath.Abs(filePath)
 	if err != nil {
@@ -63,40 +60,40 @@ func TestNormalFile(t *testing.T) {
 		infos[0].OriginalPath != absFilePath ||
 		infos[0].TrashPath != trashPath ||
 		infos[0].ItemType != storage.TYPE_FILE {
-		t.Fatal("database record error")
+		t.Error("database record error")
 	}
 	trashInfo, err := cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
-		t.Fatal("un-remove error")
+		t.Error("un-remove error")
 	}
 	_, err = os.Stat(trashInfo.TrashPath)
 	if err == nil {
-		t.Fatal("file still in the trash bin")
+		t.Error("file still in the trash bin")
 	}
 	_, err = os.Stat(trashInfo.OriginalPath)
 	if err != nil {
-		t.Fatal("file is not in the original path")
+		t.Error("file is not in the original path")
 	}
 	infos = storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) > 0 {
-		t.Fatal("database record is not deleted")
+		t.Error("database record is not deleted")
 	}
 }
 
 func TestWrongFilePath(t *testing.T) {
 	_, err := cmd.Remove("path/not/exist", false, false)
 	if err == nil {
-		t.Fatal("don't report file not exist error")
+		t.Error("don't report file not exist error")
 	}
 	if err != errs.ItemNotExistError {
-		t.Fatal("report a wrong error type")
+		t.Error("report a wrong error type")
 	}
 	_, err = cmd.UnRemove("non-exist", false, false, "/original", false)
 	if err == nil {
-		t.Fatal("don't report file not exist error")
+		t.Error("don't report file not exist error")
 	}
 	if err != errs.ItemNotExistError {
-		t.Fatal("report a wrong error type")
+		t.Error("report a wrong error type")
 	}
 }
 
@@ -106,27 +103,27 @@ func TestEmptyDirectory(t *testing.T) {
 	defer removeTestDir(dirPath)
 	_, err := cmd.Remove(dirPath, false, false)
 	if err == nil {
-		t.Fatal("delete directory when it shouldn't")
+		t.Error("delete directory when it shouldn't")
 	}
 	if err != errs.IsDirectoryError {
-		t.Fatal("report wrong error type")
+		t.Error("report wrong error type")
 	}
 	id, err := cmd.Remove(dirPath, true, false)
 	if err != nil {
-		t.Fatal("remove directory failed")
+		t.Error("remove directory failed")
 	}
 	_, err = os.Stat(dirPath)
 	if err == nil {
-		t.Fatal("directory is not deleted at all")
+		t.Error("directory is not deleted at all")
 	}
 	trashPath := path.Join(storage.GetTrashPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
-		t.Fatal("removed item is not in trash bin")
+		t.Error("removed item is not in trash bin")
 	}
 	infos := storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) != 1 {
-		t.Fatal("the length of database record is wrong")
+		t.Error("the length of database record is wrong")
 	}
 	dirPath, err = filepath.Abs(dirPath)
 	if infos[0].Id != id ||
@@ -134,23 +131,23 @@ func TestEmptyDirectory(t *testing.T) {
 		infos[0].OriginalPath != dirPath ||
 		infos[0].TrashPath != trashPath ||
 		infos[0].ItemType != storage.TYPE_DIRECTORY {
-		t.Fatal("database record error")
+		t.Error("database record error")
 	}
 	trashInfo, err := cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
-		t.Fatal("un-remove error")
+		t.Error("un-remove error")
 	}
 	_, err = os.Stat(trashInfo.TrashPath)
 	if err == nil {
-		t.Fatal("file still in the trash bin")
+		t.Error("file still in the trash bin")
 	}
 	_, err = os.Stat(trashInfo.OriginalPath)
 	if err != nil {
-		t.Fatal("file is not in the original path")
+		t.Error("file is not in the original path")
 	}
 	infos = storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) > 0 {
-		t.Fatal("database record is not deleted")
+		t.Error("database record is not deleted")
 	}
 }
 
@@ -167,26 +164,26 @@ func TestNestedDirectory(t *testing.T) {
 	defer removeTestFile(path.Join(dirPath1, dirPath2, filePath2))
 	_, err := cmd.Remove(dirPath1, false, false)
 	if err == nil {
-		t.Fatal("remove dir when it shouldn't")
+		t.Error("remove dir when it shouldn't")
 	}
 	_, err = cmd.Remove(dirPath1, true, false)
 	if err == nil {
-		t.Fatal("remove a non-empty dir when it shouldn't")
+		t.Error("remove a non-empty dir when it shouldn't")
 	}
 	id, err := cmd.Remove(dirPath1, true, true)
 	if err != nil {
-		t.Fatal("remove dir failed")
+		t.Error("remove dir failed")
 	}
 	info, err := os.Stat(path.Join(storage.GetTrashPath(), id))
 	if err != nil {
-		t.Fatal("removed item is not in trash bin")
+		t.Error("removed item is not in trash bin")
 	}
 	if !info.IsDir() {
-		t.Fatal("item type is wrong")
+		t.Error("item type is wrong")
 	}
 	infos := storage.DbListAllTrashItems(system.GetUser())
 	if len(infos) != 1 {
-		t.Fatal("number of records in database is wrong")
+		t.Error("number of records in database is wrong")
 	}
 	originalPath, _ := filepath.Abs(dirPath1)
 	if infos[0].Id != id ||
@@ -195,15 +192,15 @@ func TestNestedDirectory(t *testing.T) {
 		infos[0].ItemType != storage.TYPE_DIRECTORY ||
 		infos[0].BaseName != path.Base(dirPath1) ||
 		infos[0].Owner != system.GetUser() {
-		t.Fatal("record information is wrong")
+		t.Error("record information is wrong")
 	}
 	_, err = cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
-		t.Fatal("un-remove failed")
+		t.Error("un-remove failed")
 	}
 	_, err = os.Stat(dirPath1)
 	if err != nil {
-		t.Fatal("un-remove not complete")
+		t.Error("un-remove not complete")
 	}
 }
 func TestOverride(t *testing.T) {
@@ -212,25 +209,47 @@ func TestOverride(t *testing.T) {
 	defer removeTestFile(filePath)
 	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
-		t.Fatal("remove failed")
+		t.Error("remove failed")
 	}
 	createTestFileAndClose(filePath, "")
 	_, err = cmd.UnRemove(id, true, false, "/original", false)
 	if err == nil {
-		t.Fatal("override when it shouldn't")
+		t.Error("override when it shouldn't")
 	} else if err != errs.ItemExistError {
-		t.Fatal("report wrong error")
+		t.Error("report wrong error")
 	}
 	_, err = cmd.UnRemove(id, true, true, "/original", false)
 	if err != nil {
-		t.Fatal("un-remove failed")
+		t.Error("un-remove failed")
 	}
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
 	if string(data) != "abc" {
-		t.Fatal("not the original file")
+		t.Error("not the original file")
+	}
+}
+
+func TestUnremoveRedirect(t *testing.T) {
+	filePath := "abc.txt"
+	dirPath := "redirect"
+	createTestFileAndClose(filePath, "")
+	defer removeTestFile(filePath)
+	_, err := cmd.Remove(filePath, false, false)
+	if err != nil {
+		t.Error("remove failed")
+	}
+	_, err = cmd.UnRemove(filePath, false, false, dirPath, true)
+	if err != nil {
+		t.Error("un-remove failed")
+	}
+	defer removeTestDir(dirPath)
+	if _, err := os.Stat(filePath); err == nil {
+		t.Error("file is still at the original path")
+	}
+	if _, err := os.Stat(filepath.Join(dirPath, filePath)); err != nil {
+		t.Error("file is not at the target path")
 	}
 }
 
@@ -239,15 +258,9 @@ func createTestFile(filePath, content string) *os.File {
 	if err != nil {
 		panic(err)
 	}
-	_, err = file.WriteString("abc")
+	_, err = file.WriteString(content)
 	if err != nil {
 		panic(err)
-	}
-	if len(content) > 0 {
-		_, err = file.WriteString(content)
-		if err != nil {
-			panic(err)
-		}
 	}
 	return file
 }

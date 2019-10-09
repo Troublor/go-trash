@@ -14,7 +14,7 @@ func newEvent(eventName string) (*Event, error) {
 	if err == nil {
 		return nil, errs.EventExistError
 	}
-	event := &Event{Name: eventName, listeners: make([]func(event Event), 5)}
+	event := &Event{Name: eventName, listeners: make([]func(event Event), 0, 5)}
 	return event, nil
 }
 

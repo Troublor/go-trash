@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/Troublor/trash-go/errs"
+	"github.com/Troublor/trash-go/service"
 	"github.com/Troublor/trash-go/system"
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
@@ -33,10 +34,20 @@ func initDB() {
 		if err != nil {
 			panic(err)
 		}
+		if system.IsTesting() {
+			_ = service.SubscribeEvent("onTestEnd", func(event service.Event) {
+				_ = os.RemoveAll(GetTrashPath())
+			})
+		}
 	}
 	database, err = sql.Open("sqlite3", GetDbPath())
 	if err != nil {
 		panic(err.Error())
+	}
+	if system.IsTesting() {
+		_ = service.SubscribeEvent("onTestEnd", func(event service.Event) {
+			_ = os.Remove(GetDbPath())
+		})
 	}
 	defer func() {
 		if system.IsSudo() {
