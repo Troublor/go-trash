@@ -20,8 +20,8 @@ A trash files and directories management tool for Linux command line.
 **The installation of Go-trash requires root authentication.**
 
 ```
-git clone https://github.com/Troublor/trash-go.git
-cd trash-go
+git clone https://github.com/Troublor/go-trash.git
+cd go-trash
 chmod +x install.sh
 ./install.sh
 ```
