@@ -23,6 +23,7 @@ go build -o ${GOTRASH_PATH}/${CMD_NAME}
 sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
 sudo chmod 777 ${BIN_PATH}/${CMD_NAME}
 sudo ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
-sudo chmod 666 ${BIN_PATH}/${CONFIG_NAME}
 sudo chmod 777 -R ${GOTRASH_PATH}
+sudo chmod 666 ${BIN_PATH}/${CONFIG_NAME}
+
 

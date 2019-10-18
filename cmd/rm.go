@@ -39,7 +39,7 @@ func init() {
 }
 
 func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
-	trashDir := storage.GetTrashPath()
+	trashDir := storage.GetTrashBinPath()
 	var err error
 	if !filepath.IsAbs(itemPath) {
 		itemPath, err = filepath.Abs(itemPath)
@@ -63,7 +63,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 		// add information in database
 		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE, system.GetUser())
 		// move the item into trash directory
-		err := storage.SafeRename(itemPath, path.Join(trashDir, id))
+		err := system.SafeRename(itemPath, path.Join(trashDir, id))
 		if err != nil {
 			panic(err)
 		}
@@ -82,7 +82,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 		// add information in database
 		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY, system.GetUser())
 		// move the item into trash directory
-		err = storage.SafeRename(itemPath, path.Join(trashDir, id))
+		err = system.SafeRename(itemPath, path.Join(trashDir, id))
 		if err != nil {
 			panic(err)
 		}

@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Troublor/trash-go/service"
 	"github.com/Troublor/trash-go/storage"
+	"github.com/Troublor/trash-go/system"
 	"github.com/spf13/cobra"
 	"os"
+	"os/exec"
 )
 
 var rootCmd = &cobra.Command{
@@ -16,10 +19,13 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	service.MustEventHappen("onCmdStart")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
+		service.MustEventHappen("onCmdExitWithErr")
 		os.Exit(-1)
 	}
+	service.MustEventHappen("onCmdEnd")
 }
 
 func init() {
@@ -35,4 +41,15 @@ func init() {
 
 func initialize() {
 	storage.InitStorage()
+	if system.IsSudo() {
+		openPermission := func(event service.Event) {
+			cmd := exec.Command("sudo chmod 666 -R " + storage.GetDbPath() + " " + storage.GetTrashBinPath())
+			_, err := cmd.Output()
+			if err != nil {
+				panic(err)
+			}
+		}
+		service.MustSubscribeEvent("onCmdEnd", openPermission)
+		service.MustSubscribeEvent("onCmdExitWithErr", openPermission)
+	}
 }

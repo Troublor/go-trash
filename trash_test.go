@@ -14,16 +14,30 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	mockConfigFile := func() {
+		cmdDir := system.GetTrashCmdDir()
+		testPayload := `{"trashDir":"` + cmdDir + `"}`
+		err := ioutil.WriteFile(filepath.Join(system.GetTrashCmdDir(), "gotrash-config.json"), []byte(testPayload), 0666)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	// test context initialization here
-	//system.IsTesting = true
+	mockConfigFile()
 	storage.InitStorage()
+	service.MustSubscribeEvent("onTestEnd", func(event service.Event) {
+		// delete trash_bin trash_info.db after test finishes
+		_ = os.RemoveAll(storage.GetTrashBinPath())
+		_ = os.Remove(storage.GetDbPath())
+	})
 	createTestDir("tmp")
 	defer removeTestDir("tmp")
 	os.Chdir("tmp")
 	defer os.Chdir("..")
-	_ = service.EventHappen("onTestStart")
+	service.MustEventHappen("onTestStart")
+	defer service.MustEventHappen("onTestEnd")
 	_ = m.Run()
-	_ = service.EventHappen("onTestEnd")
 }
 
 func TestNormalFile(t *testing.T) {
@@ -42,7 +56,7 @@ func TestNormalFile(t *testing.T) {
 	if err == nil {
 		t.Error("didn't remove")
 	}
-	trashPath := path.Join(storage.GetTrashPath(), path.Base(id))
+	trashPath := path.Join(storage.GetTrashBinPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
 		t.Error("removed item is not in trash bin")
@@ -78,6 +92,38 @@ func TestNormalFile(t *testing.T) {
 	if len(infos) > 0 {
 		t.Error("database record is not deleted")
 	}
+}
+
+func createTestFile(filePath, content string) *os.File {
+	file, err := os.Create(filePath)
+	if err != nil {
+		panic(err)
+	}
+	_, err = file.WriteString(content)
+	if err != nil {
+		panic(err)
+	}
+	return file
+}
+
+func createTestFileAndClose(filePath, content string) {
+	file := createTestFile(filePath, content)
+	_ = file.Close()
+}
+
+func removeTestFile(filePath string) {
+	_ = os.Remove(filePath)
+}
+
+func createTestDir(dirPath string) {
+	err := os.MkdirAll(dirPath, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func removeTestDir(dirPath string) {
+	_ = os.RemoveAll(dirPath)
 }
 
 func TestWrongFilePath(t *testing.T) {
@@ -116,7 +162,7 @@ func TestEmptyDirectory(t *testing.T) {
 	if err == nil {
 		t.Error("directory is not deleted at all")
 	}
-	trashPath := path.Join(storage.GetTrashPath(), path.Base(id))
+	trashPath := path.Join(storage.GetTrashBinPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
 		t.Error("removed item is not in trash bin")
@@ -174,7 +220,7 @@ func TestNestedDirectory(t *testing.T) {
 	if err != nil {
 		t.Error("remove dir failed")
 	}
-	info, err := os.Stat(path.Join(storage.GetTrashPath(), id))
+	info, err := os.Stat(path.Join(storage.GetTrashBinPath(), id))
 	if err != nil {
 		t.Error("removed item is not in trash bin")
 	}
@@ -188,7 +234,7 @@ func TestNestedDirectory(t *testing.T) {
 	originalPath, _ := filepath.Abs(dirPath1)
 	if infos[0].Id != id ||
 		infos[0].OriginalPath != originalPath ||
-		infos[0].TrashPath != path.Join(storage.GetTrashPath(), id) ||
+		infos[0].TrashPath != path.Join(storage.GetTrashBinPath(), id) ||
 		infos[0].ItemType != storage.TYPE_DIRECTORY ||
 		infos[0].BaseName != path.Base(dirPath1) ||
 		infos[0].Owner != system.GetUser() {
@@ -253,34 +299,48 @@ func TestUnremoveRedirect(t *testing.T) {
 	}
 }
 
-func createTestFile(filePath, content string) *os.File {
-	file, err := os.Create(filePath)
+func TestCrossDriverRemove(t *testing.T) {
+	filePath := "/tmp/file.txt"
+	createTestFileAndClose(filePath, "123")
+	defer removeTestFile(filePath)
+	id, err := cmd.Remove(filePath, false, false)
 	if err != nil {
-		panic(err)
+		t.Fatal("remove failed")
 	}
-	_, err = file.WriteString(content)
+	if _, err = os.Stat(path.Join(storage.GetTrashBinPath(), id)); err != nil {
+		t.Fatal("remove unfinished")
+	}
+	_, err = cmd.UnRemove(id, true, false, "/original", false)
 	if err != nil {
-		panic(err)
+		t.Fatal("un-remove failed")
 	}
-	return file
-}
+	if _, err = os.Stat(filePath); err != nil {
+		t.Fatal("un-remove unfinished")
+	}
 
-func createTestFileAndClose(filePath, content string) {
-	file := createTestFile(filePath, content)
-	_ = file.Close()
-}
-
-func removeTestFile(filePath string) {
-	_ = os.Remove(filePath)
-}
-
-func createTestDir(dirPath string) {
-	err := os.MkdirAll(dirPath, os.ModePerm)
+	//directory
+	dirPath1, dirPath2 := "~/parent", "child"
+	filePath1, filePath2 := "file1.txt", "file2.txt"
+	createTestDir(dirPath1)
+	defer removeTestDir(dirPath1)
+	createTestDir(filepath.Join(dirPath1, dirPath2))
+	defer removeTestDir(filepath.Join(dirPath1, dirPath2))
+	createTestFileAndClose(path.Join(dirPath1, filePath1), "")
+	defer removeTestFile(path.Join(dirPath1, filePath1))
+	createTestFileAndClose(path.Join(dirPath1, dirPath2, filePath2), "")
+	defer removeTestFile(path.Join(dirPath1, dirPath2, filePath2))
+	id, err = cmd.Remove(dirPath1, true, true)
 	if err != nil {
-		panic(err)
+		t.Fatal("remove failed")
 	}
-}
-
-func removeTestDir(dirPath string) {
-	_ = os.RemoveAll(dirPath)
+	if _, err = os.Stat(dirPath1); err == nil {
+		t.Fatal("remove unfinished")
+	}
+	_, err = cmd.UnRemove(id, true, false, "/original", false)
+	if err != nil {
+		t.Fatal("un-remove failed")
+	}
+	if _, err = os.Stat(dirPath1); err != nil {
+		t.Fatal("un-remove unfinished")
+	}
 }

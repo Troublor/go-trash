@@ -42,13 +42,27 @@ func SubscribeEvent(eventName string, handler func(event Event)) error {
 	return nil
 }
 
+func MustSubscribeEvent(eventName string, handler func(event Event)) {
+	err := SubscribeEvent(eventName, handler)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func EventHappen(eventName string) error {
 	event, err := GetEvent(eventName)
 	if err != nil {
 		return err
 	}
 	event.Happen()
-	return errs.EventNotExistError
+	return nil
+}
+
+func MustEventHappen(eventName string) {
+	err := EventHappen(eventName)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func CreateEvent(eventName string) error {

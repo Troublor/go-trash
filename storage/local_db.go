@@ -6,17 +6,18 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/Troublor/trash-go/errs"
-	"github.com/Troublor/trash-go/service"
-	"github.com/Troublor/trash-go/system"
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
-	"os/exec"
 	"path"
 	"time"
 )
 
 var database *sql.DB
+
+func InitStorage() {
+	initDB()
+}
 
 func initDB() {
 	initializeSettings := func() {
@@ -29,35 +30,16 @@ func initDB() {
 	}
 	var err error
 	//create trash bin directory
-	if _, err = os.Stat(GetTrashPath()); err != nil {
-		err = os.MkdirAll(GetTrashPath(), os.ModePerm)
+	if _, err = os.Stat(GetTrashBinPath()); err != nil {
+		err = os.MkdirAll(GetTrashBinPath(), os.ModePerm)
 		if err != nil {
 			panic(err)
-		}
-		if system.IsTesting() {
-			_ = service.SubscribeEvent("onTestEnd", func(event service.Event) {
-				_ = os.RemoveAll(GetTrashPath())
-			})
 		}
 	}
 	database, err = sql.Open("sqlite3", GetDbPath())
 	if err != nil {
 		panic(err.Error())
 	}
-	if system.IsTesting() {
-		_ = service.SubscribeEvent("onTestEnd", func(event service.Event) {
-			_ = os.Remove(GetDbPath())
-		})
-	}
-	defer func() {
-		if system.IsSudo() {
-			cmd := exec.Command("sudo chmod 777 -R " + GetDbPath())
-			_, err := cmd.Output()
-			if err != nil {
-				panic(err)
-			}
-		}
-	}()
 	// Create Settings table if it does not exist
 	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS settings (setting_key TEXT PRIMARY KEY, setting_value TEXT)")
 	if err != nil {
