@@ -44,11 +44,11 @@ func TestNormalFile(t *testing.T) {
 	filePath := "abc.txt"
 	createTestFileAndClose(filePath, "123")
 	defer removeTestFile(filePath)
-	_, err := cmd.Remove(filePath, true, false)
+	_, err := cmd.Remove(filePath, true, false, false)
 	if err != errs.IsFileError {
 		panic("report wrong error type")
 	}
-	id, err := cmd.Remove(filePath, false, false)
+	id, err := cmd.Remove(filePath, false, false, false)
 	if err != nil {
 		t.Error("remove error: " + err.Error())
 	}
@@ -127,7 +127,7 @@ func removeTestDir(dirPath string) {
 }
 
 func TestWrongFilePath(t *testing.T) {
-	_, err := cmd.Remove("path/not/exist", false, false)
+	_, err := cmd.Remove("path/not/exist", false, false, false)
 	if err == nil {
 		t.Error("don't report file not exist error")
 	}
@@ -147,14 +147,14 @@ func TestEmptyDirectory(t *testing.T) {
 	dirPath := "test_dir"
 	createTestDir(dirPath)
 	defer removeTestDir(dirPath)
-	_, err := cmd.Remove(dirPath, false, false)
+	_, err := cmd.Remove(dirPath, false, false, false)
 	if err == nil {
 		t.Error("delete directory when it shouldn't")
 	}
 	if err != errs.IsDirectoryError {
 		t.Error("report wrong error type")
 	}
-	id, err := cmd.Remove(dirPath, true, false)
+	id, err := cmd.Remove(dirPath, true, false, false)
 	if err != nil {
 		t.Error("remove directory failed")
 	}
@@ -208,15 +208,15 @@ func TestNestedDirectory(t *testing.T) {
 	defer removeTestFile(filepath.Join(dirPath1, filePath1))
 	createTestFileAndClose(path.Join(dirPath1, dirPath2, filePath2), "")
 	defer removeTestFile(path.Join(dirPath1, dirPath2, filePath2))
-	_, err := cmd.Remove(dirPath1, false, false)
+	_, err := cmd.Remove(dirPath1, false, false, false)
 	if err == nil {
 		t.Error("remove dir when it shouldn't")
 	}
-	_, err = cmd.Remove(dirPath1, true, false)
+	_, err = cmd.Remove(dirPath1, true, false, false)
 	if err == nil {
 		t.Error("remove a non-empty dir when it shouldn't")
 	}
-	id, err := cmd.Remove(dirPath1, true, true)
+	id, err := cmd.Remove(dirPath1, true, true, false)
 	if err != nil {
 		t.Error("remove dir failed")
 	}
@@ -253,7 +253,7 @@ func TestOverride(t *testing.T) {
 	filePath := "file.txt"
 	createTestFileAndClose(filePath, "abc")
 	defer removeTestFile(filePath)
-	id, err := cmd.Remove(filePath, false, false)
+	id, err := cmd.Remove(filePath, false, false, false)
 	if err != nil {
 		t.Error("remove failed")
 	}
@@ -282,7 +282,7 @@ func TestUnremoveRedirect(t *testing.T) {
 	dirPath := "redirect"
 	createTestFileAndClose(filePath, "")
 	defer removeTestFile(filePath)
-	_, err := cmd.Remove(filePath, false, false)
+	_, err := cmd.Remove(filePath, false, false, false)
 	if err != nil {
 		t.Error("remove failed")
 	}
@@ -303,7 +303,7 @@ func TestCrossDriverRemove(t *testing.T) {
 	filePath := "/tmp/file.txt"
 	createTestFileAndClose(filePath, "123")
 	defer removeTestFile(filePath)
-	id, err := cmd.Remove(filePath, false, false)
+	id, err := cmd.Remove(filePath, false, false, false)
 	if err != nil {
 		t.Fatal("remove failed")
 	}
@@ -329,7 +329,7 @@ func TestCrossDriverRemove(t *testing.T) {
 	defer removeTestFile(path.Join(dirPath1, filePath1))
 	createTestFileAndClose(path.Join(dirPath1, dirPath2, filePath2), "")
 	defer removeTestFile(path.Join(dirPath1, dirPath2, filePath2))
-	id, err = cmd.Remove(dirPath1, true, true)
+	id, err = cmd.Remove(dirPath1, true, true, false)
 	if err != nil {
 		t.Fatal("remove failed")
 	}

@@ -14,14 +14,15 @@ import (
 
 var recursive bool
 var directory bool
+var permanent bool
 
 var rmCmd = &cobra.Command{
-	Use:   "rm [-d]|[-r]",
+	Use:   "rm [-d]|[-r][-p]",
 	Short: "Remove the files or directories by putting them in trash bin",
 	Long:  `Remove the files or directories by putting them in trash bin`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, itemPath := range args {
-			id, err := Remove(itemPath, directory, recursive)
+			id, err := Remove(itemPath, directory, recursive, permanent)
 			if err != nil {
 				fmt.Println("Remove Error: " + err.Error())
 			} else {
@@ -36,9 +37,11 @@ func init() {
 		"recursively remove files in directory")
 	rmCmd.Flags().BoolVarP(&directory, "directory", "d", false,
 		"Remove directory")
+	rmCmd.Flags().BoolVarP(&permanent, "permanent", "p", false,
+		"permanently remove (without putting into trash bin)")
 }
 
-func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
+func Remove(itemPath string, isDirectory bool, recursive bool, permanent bool) (string, error) {
 	trashDir := storage.GetTrashBinPath()
 	var err error
 	if !filepath.IsAbs(itemPath) {
@@ -60,14 +63,20 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 		if fileInfo.IsDir() {
 			return "", errs.IsDirectoryError
 		}
-		// add information in database
-		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE, system.GetUser())
-		// move the item into trash directory
-		err := system.SafeRename(itemPath, path.Join(trashDir, id))
-		if err != nil {
-			panic(err)
+		if permanent {
+			err = os.Remove(itemPath)
+			return "", err
+		} else {
+			// add information in database
+			id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_FILE, system.GetUser())
+			// move the item into trash directory
+			err := system.SafeRename(itemPath, path.Join(trashDir, id))
+			if err != nil {
+				panic(err)
+			}
+			return id, nil
 		}
-		return id, nil
+
 	} else {
 		if !fileInfo.IsDir() {
 			return "", errs.IsFileError
@@ -79,14 +88,19 @@ func Remove(itemPath string, isDirectory bool, recursive bool) (string, error) {
 		if !isEmpty && !recursive {
 			return "", errs.DirectoryNotEmptyError
 		}
-		// add information in database
-		id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY, system.GetUser())
-		// move the item into trash directory
-		err = system.SafeRename(itemPath, path.Join(trashDir, id))
-		if err != nil {
-			panic(err)
+		if permanent {
+			err = os.RemoveAll(itemPath)
+			return "", err
+		} else {
+			// add information in database
+			id := storage.DbInsertTrashItem(itemPath, trashDir, fileInfo.Name(), storage.TYPE_DIRECTORY, system.GetUser())
+			// move the item into trash directory
+			err = system.SafeRename(itemPath, path.Join(trashDir, id))
+			if err != nil {
+				panic(err)
+			}
+			return id, nil
 		}
-		return id, nil
 	}
 }
 
