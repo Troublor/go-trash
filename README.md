@@ -14,6 +14,7 @@ A trash files and directories management tool for Linux command line.
 ## Features to Come
 
 - Auto clearance of trash bin
+- Command completion for trash items
 
 ## Installation
 
