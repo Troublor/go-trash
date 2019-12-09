@@ -120,7 +120,7 @@ else
     ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
     ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
     chmod +x ${BIN_PATH}/${CMD_NAME}
-    chmod -x ${BIN_PATH}/${CONFIG_NAME}
+    chmod 666 ${BIN_PATH}/${CONFIG_NAME}
 fi
 
 if [[ ${GLOBAL} -eq 1 ]]; then
