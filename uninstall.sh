@@ -9,11 +9,11 @@ CMD_LOCATION=$(readlink ${BIN_LOCATION})
 GOTRASH_PATH=$(dirname ${CMD_LOCATION})
 owner=$(stat -c '%U' ${GOTRASH_PATH})
 if [[ ${owner} = ${USER} ]]; then
-    sudo rm ${BIN_LOCATION}
-    sudo rm ${BIN_PATH}/${CONFIG_NAME}
-    sudo rm -r -d ${GOTRASH_PATH}
-else
     rm ${BIN_LOCATION}
     rm ${BIN_PATH}/${CONFIG_NAME}
     rm -r -d ${GOTRASH_PATH}
+else
+    sudo rm ${BIN_LOCATION}
+    sudo rm ${BIN_PATH}/${CONFIG_NAME}
+    sudo rm -r -d ${GOTRASH_PATH}
 fi
