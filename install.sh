@@ -31,17 +31,17 @@ do
 done
 
 if [[ ${GLOBAL} -eq 1 ]]; then
-    if [[ ${GOTRASH_PATH} -eq "" ]]; then
+    if [[ ${GOTRASH_PATH} = "" ]]; then
         GOTRASH_PATH="/etc/gotrash"
     fi
-    if [[ ${BIN_PATH} -eq "" ]]; then
+    if [[ ${BIN_PATH} = "" ]]; then
         BIN_PATH="/usr/local/bin"
     fi
 else
-    if [[ ${GOTRASH_PATH} -eq "" ]]; then
+    if [[ ${GOTRASH_PATH} = "" ]]; then
         GOTRASH_PATH="${USER_HOME}/.gotrash"
     fi
-    if [[ ${BIN_PATH} -eq "" ]]; then
+    if [[ ${BIN_PATH} = "" ]]; then
         BIN_PATH="${USER_HOME}/bin"
     fi
 fi
@@ -68,7 +68,11 @@ elif [[ -f ${BIN_PATH} ]]; then
     echo "[ERROR] ${BIN_PATH} is a file"
     exit
 else
-    sudo mkdir -p ${BIN_PATH}
+    if [[ ${GLOBAL} -eq 1 ]]; then
+        sudo mkdir -p ${BIN_PATH}
+    else
+        mkdir -p ${BIN_PATH}
+    fi
 fi
 
 # remove previous installation (if any)
@@ -93,9 +97,9 @@ fi
 sudo echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
 
 # build
-echo -n "[INFO] Start building gotrash..."
+echo "[INFO] Start building gotrash..."
 go build -o ${GOTRASH_PATH}/${CMD_NAME}
-echo "done"
+echo "[INFO] Building finished"
 
 if [[ ${GLOBAL} -eq 1 ]]; then
     sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
@@ -103,10 +107,12 @@ if [[ ${GLOBAL} -eq 1 ]]; then
     sudo chmod 666 -R ${GOTRASH_PATH}
     sudo chmod +x ${GOTRASH_PATH}
     sudo chmod 777 ${BIN_PATH}/${CMD_NAME}
+    sudo chmod 666 ${BIN_PATH}/${CONFIG_NAME}
 else
     ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
     ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
     chmod +x ${BIN_PATH}/${CMD_NAME}
+    chmod -x ${BIN_PATH}/${CONFIG_NAME}
 fi
 
 if [[ ${GLOBAL} -eq 1 ]]; then
