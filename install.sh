@@ -53,7 +53,11 @@ elif [[ -f ${GOTRASH_PATH} ]]; then
     echo "[ERROR] ${GOTRASH_PATH} is a file"
     exit
 else
-    sudo mkdir -p ${GOTRASH_PATH}
+    if [[ ${GLOBAL} -eq 1 ]]; then
+        sudo mkdir -p ${GOTRASH_PATH}
+    else
+        mkdir -p ${BIN_PATH}
+    fi
 fi
 
 # set GOTRASH_PATH privilege for global installation
@@ -94,7 +98,11 @@ fi
 
 # generate config file
 # TODO need refinement
-sudo echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
+if [[ ${GLOBAL} -eq 1 ]]; then
+    sudo echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
+else
+    echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
+fi
 
 # build
 echo "[INFO] Start building gotrash..."
