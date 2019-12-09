@@ -14,7 +14,7 @@ func GetConfig() gonfig.Gonfig {
 	if config != nil {
 		return config
 	}
-	file, err := os.Open(filepath.Join(system.GetTrashCmdDir(), "gotrash-config.json"))
+	file, err := os.Open(filepath.Join(system.GetTrashCmdDir(), "config-gotrash.json"))
 	if err != nil {
 		panic(err)
 	}

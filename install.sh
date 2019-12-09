@@ -3,7 +3,7 @@
 USER_HOME=$(eval echo ~${USER})
 
 CMD_NAME="gotrash"
-CONFIG_NAME="gotrash-config.json"
+CONFIG_NAME="config-gotrash.json"
 GOTRASH_PATH=""
 BIN_PATH=""
 

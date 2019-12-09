@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CMD_NAME="gotrash"
-CONFIG_NAME="gotrash-config.json"
+CONFIG_NAME="config-gotrash.json"
 
 BIN_LOCATION=$(which ${CMD_NAME})
 BIN_PATH=$(dirname ${BIN_LOCATION})
