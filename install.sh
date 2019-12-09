@@ -96,6 +96,11 @@ else
     fi
 fi
 
+# build
+echo "[INFO] Start building gotrash..."
+go build -o ${GOTRASH_PATH}/${CMD_NAME}
+echo "[INFO] Building finished"
+
 # generate config file
 # TODO need refinement
 if [[ ${GLOBAL} -eq 1 ]]; then
@@ -103,11 +108,6 @@ if [[ ${GLOBAL} -eq 1 ]]; then
 else
     echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
 fi
-
-# build
-echo "[INFO] Start building gotrash..."
-go build -o ${GOTRASH_PATH}/${CMD_NAME}
-echo "[INFO] Building finished"
 
 if [[ ${GLOBAL} -eq 1 ]]; then
     sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
