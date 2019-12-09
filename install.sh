@@ -4,8 +4,8 @@ USER_HOME=$(eval echo ~${USER})
 
 CMD_NAME="gotrash"
 CONFIG_NAME="gotrash-config.json"
-BIN_PATH="/usr/local/bin"
-GOTRASH_PATH="/etc/gotrash"
+GOTRASH_PATH=""
+BIN_PATH=""
 
 GLOBAL=1
 
@@ -29,6 +29,22 @@ do
         ;;
     esac
 done
+
+if [[ ${GLOBAL} -eq 1 ]]; then
+    if [[ ${GOTRASH_PATH} -eq "" ]]; then
+        GOTRASH_PATH="/etc/gotrash"
+    fi
+    if [[ ${BIN_PATH} -eq "" ]]; then
+        BIN_PATH="/usr/local/bin"
+    fi
+else
+    if [[ ${GOTRASH_PATH} -eq "" ]]; then
+        GOTRASH_PATH="${USER_HOME}/.gotrash"
+    fi
+    if [[ ${BIN_PATH} -eq "" ]]; then
+        BIN_PATH="${USER_HOME}/bin"
+    fi
+fi
 
 # check GOTRASH_PATH
 if [[ -d ${GOTRASH_PATH} ]]; then
@@ -56,11 +72,20 @@ else
 fi
 
 # remove previous installation (if any)
-if [[ -L ${BIN_PATH}/${CMD_NAME} ]]; then
-    rm ${BIN_PATH}/${CMD_NAME}
-fi
-if [[ -L ${BIN_PATH}/${CONFIG_NAME} ]]; then
-    rm ${BIN_PATH}/${CONFIG_NAME}
+if [[ ${GLOBAL} -eq 1 ]]; then
+    if [[ -L ${BIN_PATH}/${CMD_NAME} ]]; then
+        sudo rm ${BIN_PATH}/${CMD_NAME}
+    fi
+    if [[ -L ${BIN_PATH}/${CONFIG_NAME} ]]; then
+        sudo rm ${BIN_PATH}/${CONFIG_NAME}
+    fi
+else
+    if [[ -L ${BIN_PATH}/${CMD_NAME} ]]; then
+        rm ${BIN_PATH}/${CMD_NAME}
+    fi
+    if [[ -L ${BIN_PATH}/${CONFIG_NAME} ]]; then
+        rm ${BIN_PATH}/${CONFIG_NAME}
+    fi
 fi
 
 # generate config file
@@ -72,14 +97,12 @@ go build -o ${GOTRASH_PATH}/${CMD_NAME}
 
 if [[ ${GLOBAL} -eq 1 ]]; then
     sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
-    sudo ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
     sudo chmod 666 -R ${GOTRASH_PATH}
     sudo chmod +x ${GOTRASH_PATH}
     sudo chmod 777 ${BIN_PATH}/${CMD_NAME}
 else
     ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
     chmod +x ${BIN_PATH}/${CMD_NAME}
-    ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
 fi
 
 if [[ ${GLOBAL} -eq 1 ]]; then
