@@ -10,12 +10,24 @@ import (
 )
 
 var useId bool
+var clearAll bool
 
 var cleanCmd = &cobra.Command{
-	Use:   "clean [-i] items...",
+	Use:   "clean [-i][-a] items...",
 	Short: "Clean the trash bin, permanently delete items in trash bin.",
 	Long:  `Clean the items listed in the command, if option -i is used, items should be given by their indices.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if clearAll {
+			// delete all items in trash bin
+			items := List()
+			for _, item := range items {
+				err := PermanentlyDelete(item.Id)
+				if err != nil {
+					fmt.Printf("Clean Error: %s", err.Error())
+				}
+			}
+			return
+		}
 		for _, arg := range args {
 			err := Clean(useId, arg)
 			if err != nil {
@@ -35,6 +47,8 @@ var cleanCmd = &cobra.Command{
 func init() {
 	cleanCmd.Flags().BoolVarP(&useId, "id", "i", false,
 		"use id of the item to clean (permanently delete) item from trash bin")
+	cleanCmd.Flags().BoolVarP(&clearAll, "all", "a", false,
+		"clean all the trash items, i.e. permanently delete all the items in trash bin.")
 }
 
 func Clean(useId bool, item string) error {
