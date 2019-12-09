@@ -3,7 +3,11 @@
 CMD_NAME="gotrash"
 CONFIG_NAME="config-gotrash.json"
 
-BIN_LOCATION=$(which ${CMD_NAME})
+BIN_LOCATION=$(command -v ${CMD_NAME})
+if [[ ! -x ${BIN_LOCATION} ]]; then
+    echo "command ${CMD_NAME} not found"
+    exit
+fi
 BIN_PATH=$(dirname ${BIN_LOCATION})
 CMD_LOCATION=$(readlink ${BIN_LOCATION})
 GOTRASH_PATH=$(dirname ${CMD_LOCATION})
