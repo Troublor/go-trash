@@ -99,11 +99,13 @@ echo "done"
 
 if [[ ${GLOBAL} -eq 1 ]]; then
     sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
+    sudo ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
     sudo chmod 666 -R ${GOTRASH_PATH}
     sudo chmod +x ${GOTRASH_PATH}
     sudo chmod 777 ${BIN_PATH}/${CMD_NAME}
 else
     ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}
+    ln -s ${GOTRASH_PATH}/${CONFIG_NAME} ${BIN_PATH}/${CONFIG_NAME}
     chmod +x ${BIN_PATH}/${CMD_NAME}
 fi
 
