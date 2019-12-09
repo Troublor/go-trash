@@ -13,7 +13,6 @@ A trash files and directories management tool for Linux command line.
 
 ## Features to Come
 
-- Clean sub-command: permanently delete something in the trash bin
 - Auto clearance of trash bin
 - Command completion for trash items
 
