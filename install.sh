@@ -93,7 +93,9 @@ fi
 sudo echo "{\"trashDir\":\"${GOTRASH_PATH}\"}" > ${GOTRASH_PATH}/${CONFIG_NAME}
 
 # build
+echo -n "[INFO] Start building gotrash..."
 go build -o ${GOTRASH_PATH}/${CMD_NAME}
+echo "done"
 
 if [[ ${GLOBAL} -eq 1 ]]; then
     sudo ln -s ${GOTRASH_PATH}/${CMD_NAME} ${BIN_PATH}/${CMD_NAME}

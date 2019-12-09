@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-BIN_PATH="/usr/local/bin"
 CMD_NAME="gotrash"
-GOTRASH_PATH="/etc/gotrash"
-CONFIG_NAME="gotrash-config.json"
-
-sudo rm ${BIN_PATH}/${CMD_NAME}
-sudo rm ${BIN_PATH}/${CONFIG_NAME}
-sudo rm -r -d ${GOTRASH_PATH}
-
+BIN_LOCATION=$(which ${CMD_NAME})
+CMD_LOCATION=$(readlink ${BIN_LOCATION})
+GOTRASH_PATH=$(dirname ${CMD_LOCATION})
+owner=$(stat -c '%U' ${GOTRASH_PATH})
+if [[ ${owner} -eq ${USER} ]]; then
+    sudo rm ${BIN_LOCATION}
+    sudo rm -r -d ${GOTRASH_PATH}
+else
+    rm ${BIN_LOCATION}
+    rm -r -d ${GOTRASH_PATH}
+fi
