@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/Troublor/trash-go/service"
 	"github.com/Troublor/trash-go/storage"
-	"github.com/Troublor/trash-go/system"
 	"github.com/spf13/cobra"
 	"os"
-	"os/exec"
 )
 
 var rootCmd = &cobra.Command{
@@ -42,15 +40,15 @@ func init() {
 
 func initialize() {
 	storage.InitStorage()
-	if system.IsSudo() {
-		openPermission := func(event service.Event) {
-			cmd := exec.Command("sudo chmod 666 -R " + storage.GetDbPath() + " " + storage.GetTrashBinPath())
-			_, err := cmd.Output()
-			if err != nil {
-				panic(err)
-			}
-		}
-		service.MustSubscribeEvent("onCmdEnd", openPermission)
-		service.MustSubscribeEvent("onCmdExitWithErr", openPermission)
-	}
+	//if system.IsSudo() {
+	//	openPermission := func(event service.Event) {
+	//		cmd := exec.Command("sudo chmod 666 -R " + storage.GetDbPath() + " " + storage.GetTrashBinPath())
+	//		_, err := cmd.Output()
+	//		if err != nil {
+	//			panic(err)
+	//		}
+	//	}
+	//	service.MustSubscribeEvent("onCmdEnd", openPermission)
+	//	service.MustSubscribeEvent("onCmdExitWithErr", openPermission)
+	//}
 }
