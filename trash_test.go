@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 	mockConfigFile := func() {
 		cmdDir := system.GetTrashCmdDir()
 		testPayload := `{"trashDir":"` + cmdDir + `"}`
-		err := ioutil.WriteFile(filepath.Join(system.GetTrashCmdDir(), "gotrash-config.json"), []byte(testPayload), 0666)
+		err := ioutil.WriteFile(filepath.Join(system.GetTrashCmdDir(), "config-gotrash.json"), []byte(testPayload), 0666)
 		if err != nil {
 			panic(err)
 		}
