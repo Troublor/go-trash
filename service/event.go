@@ -1,6 +1,6 @@
 package service
 
-import "github.com/Troublor/trash-go/errs"
+import "github.com/Troublor/go-trash/errs"
 
 var Events []*Event
 

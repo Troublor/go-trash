@@ -3,9 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/Troublor/trash-go/errs"
-	"github.com/Troublor/trash-go/storage"
-	"github.com/Troublor/trash-go/system"
+	"github.com/Troublor/go-trash/errs"
+	"github.com/Troublor/go-trash/storage"
+	"github.com/Troublor/go-trash/system"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"

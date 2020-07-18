@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Troublor/trash-go/cmd"
+	"github.com/Troublor/go-trash/cmd"
 )
 
 func main() {

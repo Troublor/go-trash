@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Troublor/trash-go/service"
-	"github.com/Troublor/trash-go/storage"
+	"github.com/Troublor/go-trash/service"
+	"github.com/Troublor/go-trash/storage"
 	"github.com/spf13/cobra"
 	"os"
 )

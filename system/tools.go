@@ -1,7 +1,7 @@
 package system
 
 import (
-	"github.com/Troublor/trash-go/errs"
+	"github.com/Troublor/go-trash/errs"
 	"github.com/otiai10/copy"
 	"os"
 	"os/exec"

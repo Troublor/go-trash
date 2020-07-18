@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/Troublor/trash-go/system"
+	"github.com/Troublor/go-trash/system"
 	"github.com/creamdog/gonfig"
 	"os"
 	"path"

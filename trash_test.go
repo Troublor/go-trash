@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/Troublor/trash-go/cmd"
-	"github.com/Troublor/trash-go/errs"
-	"github.com/Troublor/trash-go/service"
-	"github.com/Troublor/trash-go/storage"
-	"github.com/Troublor/trash-go/system"
+	"github.com/Troublor/go-trash/cmd"
+	"github.com/Troublor/go-trash/errs"
+	"github.com/Troublor/go-trash/service"
+	"github.com/Troublor/go-trash/storage"
+	"github.com/Troublor/go-trash/system"
 	"io/ioutil"
 	"os"
 	"path"

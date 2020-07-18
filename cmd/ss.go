@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Troublor/trash-go/storage"
-	"github.com/Troublor/trash-go/system"
+	"github.com/Troublor/go-trash/storage"
+	"github.com/Troublor/go-trash/system"
 	"github.com/spf13/cobra"
 	"regexp"
 	"strings"

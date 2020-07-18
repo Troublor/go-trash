@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
-	"github.com/Troublor/trash-go/errs"
+	"github.com/Troublor/go-trash/errs"
 	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
