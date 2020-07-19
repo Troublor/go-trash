@@ -2,6 +2,7 @@ package errs
 
 import (
 	"errors"
+	"fmt"
 )
 
 var ItemNotExistError error
@@ -20,4 +21,16 @@ func init() {
 	IsDirectoryError = errors.New("the item is a directory")
 	IsFileError = errors.New("the item is a file")
 	PermissionError = errors.New("permission denied")
+}
+
+type FileOrDirNotExistError struct {
+	path string
+}
+
+func NewFileOrDirNotExistError(path string) FileOrDirNotExistError {
+	return FileOrDirNotExistError{path: path}
+}
+
+func (f FileOrDirNotExistError) Error() string {
+	return fmt.Sprintf("no such file or directory: %s", f.path)
 }

@@ -16,7 +16,7 @@ func TestGenId(t *testing.T) {
 }
 
 func TestRemoveFile(t *testing.T) {
-	// create a tmp file
+	// recreate a tmp file
 	tmpFile := newTmpFile()
 	defer tmpFile.delete()
 	// test rm the file
@@ -49,7 +49,7 @@ func TestRemoveFile(t *testing.T) {
 }
 
 func TestRemoveDir(t *testing.T) {
-	// create a tmp dir
+	// recreate a tmp dir
 	tmpDir := newTmpDir()
 	defer tmpDir.delete()
 	// test rm the dir
@@ -82,7 +82,7 @@ func TestRemoveDir(t *testing.T) {
 }
 
 func TestRemoveDirRecursive(t *testing.T) {
-	// create a tmp dir
+	// recreate a tmp dir
 	tmpDir := newTmpDir()
 	defer tmpDir.delete()
 	_, err := ioutil.TempDir(tmpDir.Path, "0644")
@@ -119,7 +119,7 @@ func TestRemoveDirRecursive(t *testing.T) {
 }
 
 func TestRemovePermanently(t *testing.T) {
-	// create a tmp file
+	// recreate a tmp file
 	tmpFile := newTmpFile()
 	defer tmpFile.delete()
 	// test rm the file

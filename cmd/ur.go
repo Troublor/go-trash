@@ -97,7 +97,7 @@ func unRemoveById(id string, override bool, target string, parent bool) (model.T
 						return trashInfo, err
 					}
 				} else {
-					return trashInfo, errors.New("target path not exists")
+					return trashInfo, errs.NewFileOrDirNotExistError(target)
 				}
 			} else {
 				return trashInfo, err

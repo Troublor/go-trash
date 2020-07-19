@@ -8,7 +8,7 @@ import (
 
 func TestMain(m *testing.M) {
 	GOTRASH_PATH = "./tmp/"
-	// create GOTRASH_PATH if not exist
+	// recreate GOTRASH_PATH if not exist
 	if _, err := os.Stat(GOTRASH_PATH); os.IsNotExist(err) {
 		err := os.MkdirAll(GOTRASH_PATH, os.ModePerm)
 		if err != nil {
@@ -53,12 +53,14 @@ func TestMain(m *testing.M) {
 }
 
 type tmpItem interface {
-	delete()
-	exists() bool
+	recreate()    // recreate the item if not exist
+	delete()      // delete the item
+	exists() bool // whether the item exists
 }
 
 type tmpFile struct {
-	Path string
+	Path     string
+	BaseName string
 }
 
 func newTmpFile() tmpFile {
@@ -66,7 +68,18 @@ func newTmpFile() tmpFile {
 	if err != nil {
 		panic(err)
 	}
-	return tmpFile{Path: file.Name()}
+	stat, _ := file.Stat()
+	return tmpFile{Path: file.Name(), BaseName: stat.Name()}
+}
+
+func (f tmpFile) recreate() {
+	if f.exists() {
+		return
+	}
+	_, err := os.Create(f.Path)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (f tmpFile) delete() {
@@ -81,7 +94,8 @@ func (f tmpFile) exists() bool {
 }
 
 type tmpDir struct {
-	Path string
+	Path     string
+	BaseName string
 }
 
 func newTmpDir() tmpDir {
@@ -89,7 +103,18 @@ func newTmpDir() tmpDir {
 	if err != nil {
 		panic(err)
 	}
-	return tmpDir{Path: dir}
+	stat, _ := os.Stat(dir)
+	return tmpDir{Path: dir, BaseName: stat.Name()}
+}
+
+func (f tmpDir) recreate() {
+	if f.exists() {
+		return
+	}
+	err := os.MkdirAll(f.Path, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (f tmpDir) delete() {
