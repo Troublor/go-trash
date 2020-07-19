@@ -4,7 +4,6 @@ import (
 	"github.com/Troublor/go-trash/errs"
 	"github.com/Troublor/go-trash/system"
 	"io/ioutil"
-	"os"
 	"testing"
 )
 
@@ -18,19 +17,14 @@ func TestGenId(t *testing.T) {
 
 func TestRemoveFile(t *testing.T) {
 	// create a tmp file
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "0644")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		_ = os.RemoveAll(tmpFile.Name())
-	}()
+	tmpFile := newTmpFile()
+	defer tmpFile.Delete()
 	// test rm the file
-	_, err = Remove(tmpFile.Name(), true, true, false)
+	_, err := Remove(tmpFile.Path, true, true, false)
 	if err != errs.IsFileError {
 		t.Fatal(err)
 	}
-	id, err := Remove(tmpFile.Name(), false, false, false)
+	id, err := Remove(tmpFile.Path, false, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +32,7 @@ func TestRemoveFile(t *testing.T) {
 		t.Fatal("id format not right ", id)
 	}
 	// file should already be deleted
-	if _, err := os.Stat(tmpFile.Name()); !os.IsNotExist(err) {
+	if tmpFile.Exists() {
 		t.Fatal("file not deleted")
 	}
 	// check database
@@ -49,26 +43,21 @@ func TestRemoveFile(t *testing.T) {
 	if item.ID != id {
 		t.Fatal("id in db not right", item.ID, id)
 	}
-	if item.OriginalPath != tmpFile.Name() {
+	if item.OriginalPath != tmpFile.Path {
 		t.Fatal("original path not right ", item.OriginalPath)
 	}
 }
 
 func TestRemoveDir(t *testing.T) {
-	// create a tmp file
-	tmpDir, err := ioutil.TempDir(os.TempDir(), "0644")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		_ = os.RemoveAll(tmpDir)
-	}()
+	// create a tmp dir
+	tmpDir := newTmpDir()
+	defer tmpDir.Delete()
 	// test rm the dir
-	_, err = Remove(tmpDir, false, false, false)
+	_, err := Remove(tmpDir.Path, false, false, false)
 	if err != errs.IsDirectoryError {
 		t.Fatal(err)
 	}
-	id, err := Remove(tmpDir, true, false, false)
+	id, err := Remove(tmpDir.Path, true, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +65,7 @@ func TestRemoveDir(t *testing.T) {
 		t.Fatal("id format not right ", id)
 	}
 	// dir should already be deleted
-	if _, err := os.Stat(tmpDir); !os.IsNotExist(err) {
+	if tmpDir.Exists() {
 		t.Fatal("directory not deleted")
 	}
 	// check database
@@ -87,30 +76,25 @@ func TestRemoveDir(t *testing.T) {
 	if item.ID != id {
 		t.Fatal("id in db not right")
 	}
-	if item.OriginalPath != tmpDir {
+	if item.OriginalPath != tmpDir.Path {
 		t.Fatal("original path not right ", item.OriginalPath)
 	}
 }
 
 func TestRemoveDirRecursive(t *testing.T) {
-	// create a tmp file
-	tmpDir, err := ioutil.TempDir(os.TempDir(), "0644")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		_ = os.RemoveAll(tmpDir)
-	}()
-	_, err = ioutil.TempDir(tmpDir, "0644")
+	// create a tmp dir
+	tmpDir := newTmpDir()
+	defer tmpDir.Delete()
+	_, err := ioutil.TempDir(tmpDir.Path, "0644")
 	if err != nil {
 		panic(err)
 	}
 	// test rm dir
-	_, err = Remove(tmpDir, true, false, false)
+	_, err = Remove(tmpDir.Path, true, false, false)
 	if err != errs.DirectoryNotEmptyError {
 		t.Fatal(err)
 	}
-	id, err := Remove(tmpDir, true, true, false)
+	id, err := Remove(tmpDir.Path, true, true, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +102,7 @@ func TestRemoveDirRecursive(t *testing.T) {
 		t.Fatal("id format not right ", id)
 	}
 	// dir should already be deleted
-	if _, err := os.Stat(tmpDir); !os.IsNotExist(err) {
+	if tmpDir.Exists() {
 		t.Fatal("directory not deleted")
 	}
 	// check database
@@ -129,22 +113,17 @@ func TestRemoveDirRecursive(t *testing.T) {
 	if item.ID != id {
 		t.Fatal("id in db not right")
 	}
-	if item.OriginalPath != tmpDir {
+	if item.OriginalPath != tmpDir.Path {
 		t.Fatal("original path not right ", item.OriginalPath)
 	}
 }
 
 func TestRemovePermanently(t *testing.T) {
 	// create a tmp file
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "0644")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		_ = os.RemoveAll(tmpFile.Name())
-	}()
+	tmpFile := newTmpFile()
+	defer tmpFile.Delete()
 	// test rm the file
-	id, err := Remove(tmpFile.Name(), false, false, true)
+	id, err := Remove(tmpFile.Path, false, false, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,12 +131,12 @@ func TestRemovePermanently(t *testing.T) {
 		t.Fatal("permanent delete should not return id")
 	}
 	// file should already be deleted
-	if _, err := os.Stat(tmpFile.Name()); !os.IsNotExist(err) {
+	if tmpFile.Exists() {
 		t.Fatal("file not deleted")
 	}
 	list := db.ListTrashItems(system.GetUser())
 	for _, item := range list {
-		if item.OriginalPath == tmpFile.Name() {
+		if item.OriginalPath == tmpFile.Path {
 			t.Fatal("permanent delete not work")
 		}
 
