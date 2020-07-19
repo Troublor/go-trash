@@ -53,8 +53,8 @@ func TestMain(m *testing.M) {
 }
 
 type tmpItem interface {
-	Delete()
-	Exists() bool
+	delete()
+	exists() bool
 }
 
 type tmpFile struct {
@@ -69,11 +69,11 @@ func newTmpFile() tmpFile {
 	return tmpFile{Path: file.Name()}
 }
 
-func (f tmpFile) Delete() {
+func (f tmpFile) delete() {
 	_ = os.RemoveAll(f.Path)
 }
 
-func (f tmpFile) Exists() bool {
+func (f tmpFile) exists() bool {
 	if _, err := os.Stat(f.Path); os.IsNotExist(err) {
 		return false
 	}
@@ -92,11 +92,11 @@ func newTmpDir() tmpDir {
 	return tmpDir{Path: dir}
 }
 
-func (f tmpDir) Delete() {
+func (f tmpDir) delete() {
 	_ = os.RemoveAll(f.Path)
 }
 
-func (f tmpDir) Exists() bool {
+func (f tmpDir) exists() bool {
 	if _, err := os.Stat(f.Path); os.IsNotExist(err) {
 		return false
 	}

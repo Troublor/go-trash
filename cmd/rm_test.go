@@ -18,7 +18,7 @@ func TestGenId(t *testing.T) {
 func TestRemoveFile(t *testing.T) {
 	// create a tmp file
 	tmpFile := newTmpFile()
-	defer tmpFile.Delete()
+	defer tmpFile.delete()
 	// test rm the file
 	_, err := Remove(tmpFile.Path, true, true, false)
 	if err != errs.IsFileError {
@@ -32,7 +32,7 @@ func TestRemoveFile(t *testing.T) {
 		t.Fatal("id format not right ", id)
 	}
 	// file should already be deleted
-	if tmpFile.Exists() {
+	if tmpFile.exists() {
 		t.Fatal("file not deleted")
 	}
 	// check database
@@ -51,7 +51,7 @@ func TestRemoveFile(t *testing.T) {
 func TestRemoveDir(t *testing.T) {
 	// create a tmp dir
 	tmpDir := newTmpDir()
-	defer tmpDir.Delete()
+	defer tmpDir.delete()
 	// test rm the dir
 	_, err := Remove(tmpDir.Path, false, false, false)
 	if err != errs.IsDirectoryError {
@@ -65,7 +65,7 @@ func TestRemoveDir(t *testing.T) {
 		t.Fatal("id format not right ", id)
 	}
 	// dir should already be deleted
-	if tmpDir.Exists() {
+	if tmpDir.exists() {
 		t.Fatal("directory not deleted")
 	}
 	// check database
@@ -84,7 +84,7 @@ func TestRemoveDir(t *testing.T) {
 func TestRemoveDirRecursive(t *testing.T) {
 	// create a tmp dir
 	tmpDir := newTmpDir()
-	defer tmpDir.Delete()
+	defer tmpDir.delete()
 	_, err := ioutil.TempDir(tmpDir.Path, "0644")
 	if err != nil {
 		panic(err)
@@ -102,7 +102,7 @@ func TestRemoveDirRecursive(t *testing.T) {
 		t.Fatal("id format not right ", id)
 	}
 	// dir should already be deleted
-	if tmpDir.Exists() {
+	if tmpDir.exists() {
 		t.Fatal("directory not deleted")
 	}
 	// check database
@@ -121,7 +121,7 @@ func TestRemoveDirRecursive(t *testing.T) {
 func TestRemovePermanently(t *testing.T) {
 	// create a tmp file
 	tmpFile := newTmpFile()
-	defer tmpFile.Delete()
+	defer tmpFile.delete()
 	// test rm the file
 	id, err := Remove(tmpFile.Path, false, false, true)
 	if err != nil {
@@ -131,7 +131,7 @@ func TestRemovePermanently(t *testing.T) {
 		t.Fatal("permanent delete should not return id")
 	}
 	// file should already be deleted
-	if tmpFile.Exists() {
+	if tmpFile.exists() {
 		t.Fatal("file not deleted")
 	}
 	list := db.ListTrashItems(system.GetUser())
