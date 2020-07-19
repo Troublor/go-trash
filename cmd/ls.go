@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Troublor/go-trash/storage"
+	"github.com/Troublor/go-trash/storage/model"
 	"github.com/Troublor/go-trash/system"
 	"github.com/spf13/cobra"
 	"path"
@@ -19,7 +19,7 @@ var lsCmd = &cobra.Command{
 			root user can view all trashes of all users. `,
 	Run: func(cmd *cobra.Command, args []string) {
 		results := List()
-		fmt.Println(results.ToString(verboseLs))
+		fmt.Println(results.String(verboseLs))
 	},
 }
 
@@ -28,8 +28,8 @@ func init() {
 		"List the detailed information of trash")
 }
 
-func List() storage.TrashInfoList {
-	results := storage.DbListAllTrashItems(system.GetUser())
+func List() model.TrashMetadataList {
+	results := db.ListTrashItems(system.GetUser())
 	sort.Slice(results, func(i, j int) bool {
 		base1, base2 := path.Base(results[i].OriginalPath), path.Base(results[j].OriginalPath)
 		return strings.Compare(base1, base2) < 0

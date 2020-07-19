@@ -16,7 +16,7 @@ func GetUser() string {
 	if err != nil {
 		panic(err)
 	}
-	return string(output)
+	return strings.TrimSpace(string(output))
 }
 
 func IsSudo() bool {

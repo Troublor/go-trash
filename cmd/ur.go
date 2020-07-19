@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Troublor/go-trash/errs"
-	"github.com/Troublor/go-trash/storage"
+	"github.com/Troublor/go-trash/storage/model"
 	"github.com/Troublor/go-trash/system"
 	"github.com/spf13/cobra"
 	"os"
@@ -54,7 +54,7 @@ func init() {
 		"no error if the target path does not exist, make parent directories as needed")
 }
 
-func UnRemove(payload string, isId bool, override bool, target string, parent bool) (*storage.TrashInfo, error) {
+func UnRemove(payload string, isId bool, override bool, target string, parent bool) (model.TrashMetadata, error) {
 	if isId {
 		return unRemoveById(payload, override, target, parent)
 	} else {
@@ -62,8 +62,8 @@ func UnRemove(payload string, isId bool, override bool, target string, parent bo
 	}
 }
 
-func unRemoveById(id string, override bool, target string, parent bool) (*storage.TrashInfo, error) {
-	trashInfo, err := storage.DbGetTrashItemById(id, system.GetUser())
+func unRemoveById(id string, override bool, target string, parent bool) (model.TrashMetadata, error) {
+	trashInfo, err := db.GetTrashItemById(id, system.GetUser())
 	if err != nil {
 		return trashInfo, errs.ItemNotExistError
 	}
@@ -91,19 +91,19 @@ func unRemoveById(id string, override bool, target string, parent bool) (*storag
 	if _, err = os.Stat(targetPath); err == nil {
 		// original path already exist another file
 		if override {
-			if trashInfo.ItemType == storage.TYPE_DIRECTORY {
+			if trashInfo.Type == model.TYPE_DIRECTORY {
 				_ = os.RemoveAll(targetPath)
-			} else if trashInfo.ItemType == storage.TYPE_FILE {
+			} else if trashInfo.Type == model.TYPE_FILE {
 				_ = os.Remove(targetPath)
 			} else {
-				panic(errors.New("invalid argument itemType: " + trashInfo.ItemType))
+				panic(errors.New("invalid argument itemType: " + trashInfo.Type))
 			}
 		} else {
 			return trashInfo, errs.ItemExistError
 		}
 	}
 	// delete information in database
-	err = storage.DbDeleteTrashItem(id, system.GetUser())
+	err = db.DeleteTrashItem(id, system.GetUser())
 	if err != nil {
 		return trashInfo, errs.ItemNotExistError
 	}
@@ -113,20 +113,20 @@ func unRemoveById(id string, override bool, target string, parent bool) (*storag
 	}
 	return trashInfo, nil
 }
-func unRemoveByName(name string, override bool, target string, parent bool) (*storage.TrashInfo, error) {
+func unRemoveByName(name string, override bool, target string, parent bool) (model.TrashMetadata, error) {
 	count := 0
 	var id string
-	items := storage.DbListAllTrashItems(system.GetUser())
+	items := db.ListTrashItems(system.GetUser())
 	for _, item := range items {
 		if item.BaseName == name {
 			count += 1
-			id = item.Id
+			id = item.ID
 		}
 	}
 	if count == 0 {
-		return nil, errs.ItemNotExistError
+		return model.TrashMetadata{}, errs.ItemNotExistError
 	} else if count > 1 {
-		return nil, errs.MultipleItemsError
+		return model.TrashMetadata{}, errs.MultipleItemsError
 	} else {
 		return unRemoveById(id, override, target, parent)
 	}

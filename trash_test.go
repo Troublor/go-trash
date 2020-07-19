@@ -28,8 +28,8 @@ func TestMain(m *testing.M) {
 	storage.InitStorage()
 	service.MustSubscribeEvent("onTestEnd", func(event service.Event) {
 		// delete trash_bin trash_info.db after test finishes
-		_ = os.RemoveAll(storage.GetTrashBinPath())
-		_ = os.Remove(storage.GetDbPath())
+		_ = os.RemoveAll(cmd.GetTrashBinPath())
+		_ = os.Remove(cmd.GetDbPath())
 	})
 	createTestDir("tmp")
 	defer removeTestDir("tmp")
@@ -56,7 +56,7 @@ func TestNormalFile(t *testing.T) {
 	if err == nil {
 		t.Error("didn't remove")
 	}
-	trashPath := path.Join(storage.GetTrashBinPath(), path.Base(id))
+	trashPath := path.Join(cmd.GetTrashBinPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
 		t.Error("removed item is not in trash bin")
@@ -162,7 +162,7 @@ func TestEmptyDirectory(t *testing.T) {
 	if err == nil {
 		t.Error("directory is not deleted at all")
 	}
-	trashPath := path.Join(storage.GetTrashBinPath(), path.Base(id))
+	trashPath := path.Join(cmd.GetTrashBinPath(), path.Base(id))
 	_, err = os.Stat(trashPath)
 	if err != nil {
 		t.Error("removed item is not in trash bin")
@@ -220,7 +220,7 @@ func TestNestedDirectory(t *testing.T) {
 	if err != nil {
 		t.Error("remove dir failed")
 	}
-	info, err := os.Stat(path.Join(storage.GetTrashBinPath(), id))
+	info, err := os.Stat(path.Join(cmd.GetTrashBinPath(), id))
 	if err != nil {
 		t.Error("removed item is not in trash bin")
 	}
@@ -234,7 +234,7 @@ func TestNestedDirectory(t *testing.T) {
 	originalPath, _ := filepath.Abs(dirPath1)
 	if infos[0].Id != id ||
 		infos[0].OriginalPath != originalPath ||
-		infos[0].TrashPath != path.Join(storage.GetTrashBinPath(), id) ||
+		infos[0].TrashPath != path.Join(cmd.GetTrashBinPath(), id) ||
 		infos[0].ItemType != storage.TYPE_DIRECTORY ||
 		infos[0].BaseName != path.Base(dirPath1) ||
 		infos[0].Owner != system.GetUser() {
@@ -307,7 +307,7 @@ func TestCrossDriverRemove(t *testing.T) {
 	if err != nil {
 		t.Fatal("remove failed")
 	}
-	if _, err = os.Stat(path.Join(storage.GetTrashBinPath(), id)); err != nil {
+	if _, err = os.Stat(path.Join(cmd.GetTrashBinPath(), id)); err != nil {
 		t.Fatal("remove unfinished")
 	}
 	_, err = cmd.UnRemove(id, true, false, "/original", false)

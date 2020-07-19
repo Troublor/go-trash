@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Troublor/go-trash/storage"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +14,6 @@ var settingLsCmd = &cobra.Command{
 	},
 }
 
-func ListSettings() storage.SettingList {
-	return storage.ListAllSettings()
-}
+//func ListSettings() storage.SettingList {
+//	return storage.ListAllSettings()
+//}

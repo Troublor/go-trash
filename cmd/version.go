@@ -11,6 +11,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of Go-trash",
 	Long:  `Print the version number of Go-trash`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(storage.VersionString())
+		fmt.Println(storage.Version())
 	},
 }

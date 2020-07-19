@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/Troublor/go-trash/errs"
-	"github.com/Troublor/go-trash/storage"
 	"github.com/Troublor/go-trash/system"
 	"github.com/spf13/cobra"
 	"os"
@@ -21,7 +20,7 @@ var cleanCmd = &cobra.Command{
 			// delete all items in trash bin
 			items := List()
 			for _, item := range items {
-				err := PermanentlyDelete(item.Id)
+				err := PermanentlyDelete(item.ID)
 				if err != nil {
 					fmt.Printf("Clean Error: %s", err.Error())
 				}
@@ -61,7 +60,7 @@ func Clean(useId bool, item string) error {
 		for _, result := range results {
 			if item == result.BaseName {
 				count++
-				id = result.Id
+				id = result.ID
 			}
 		}
 		if count > 1 {
@@ -77,10 +76,10 @@ func Clean(useId bool, item string) error {
 func PermanentlyDelete(id string) error {
 	results := List()
 	for _, item := range results {
-		if item.Id == id {
+		if item.ID == id {
 			err := os.RemoveAll(item.TrashPath)
 			if err == nil {
-				err = storage.DbDeleteTrashItem(id, system.GetUser())
+				err = db.DeleteTrashItem(id, system.GetUser())
 			}
 			return err
 		}

@@ -8,12 +8,20 @@ import (
 	"os"
 )
 
+var db *storage.Database
+
 var rootCmd = &cobra.Command{
 	Use:   "gotrash",
 	Short: "Go-trash is a linux command-line trash files management tool",
 	Long: `Go-trash is a linux command-line trash files management tool which provides
 			 features similar to the Recycle Bin in Windows.
 		   Developed by Troublor, 2019`,
+	PostRun: func(cmd *cobra.Command, args []string) {
+		// after execution, close db
+		if db != nil {
+			_ = db.Close()
+		}
+	},
 }
 
 func Execute() {
@@ -39,7 +47,11 @@ func init() {
 }
 
 func initialize() {
-	storage.InitStorage()
+	db = storage.NewDatabase(GetDbPath())
+	err := db.Open()
+	if err != nil {
+		panic(err)
+	}
 	//if system.IsSudo() {
 	//	openPermission := func(event service.Event) {
 	//		cmd := exec.Command("sudo chmod 666 -R " + storage.GetDbPath() + " " + storage.GetTrashBinPath())

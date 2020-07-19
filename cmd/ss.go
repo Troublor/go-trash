@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Troublor/go-trash/storage"
+	"github.com/Troublor/go-trash/storage/model"
 	"github.com/Troublor/go-trash/system"
 	"github.com/spf13/cobra"
 	"regexp"
@@ -16,11 +16,11 @@ var ssCmd = &cobra.Command{
 	Short: "Search trash in trash bin",
 	Long:  `Search trash in trash bin`,
 	Run: func(cmd *cobra.Command, args []string) {
-		results := &storage.TrashInfoList{}
+		results := model.TrashMetadataList{}
 		for _, kw := range args {
 			results.Merge(Search(kw))
 		}
-		fmt.Println(results.ToString(verboseSs))
+		fmt.Println(results.String(verboseSs))
 	},
 }
 
@@ -29,7 +29,7 @@ func init() {
 		"show the detail of searched items in trash bin")
 }
 
-func Search(keyword string) storage.TrashInfoList {
+func Search(keyword string) model.TrashMetadataList {
 	re, err := regexp.Compile(keyword)
 	if err != nil {
 		return searchWithPlainString(keyword)
@@ -37,9 +37,9 @@ func Search(keyword string) storage.TrashInfoList {
 	return searchWithRegexp(re)
 }
 
-func searchWithPlainString(keyword string) storage.TrashInfoList {
-	results := storage.DbListAllTrashItems(system.GetUser())
-	sResults := make([]storage.TrashInfo, 0)
+func searchWithPlainString(keyword string) model.TrashMetadataList {
+	results := db.ListTrashItems(system.GetUser())
+	sResults := make([]model.TrashMetadata, 0)
 	for _, elem := range results {
 		if strings.Index(elem.BaseName, keyword) >= 0 {
 			sResults = append(sResults, elem)
@@ -48,9 +48,9 @@ func searchWithPlainString(keyword string) storage.TrashInfoList {
 	return sResults
 }
 
-func searchWithRegexp(re *regexp.Regexp) storage.TrashInfoList {
-	results := storage.DbListAllTrashItems(system.GetUser())
-	sResults := make([]storage.TrashInfo, 0)
+func searchWithRegexp(re *regexp.Regexp) model.TrashMetadataList {
+	results := db.ListTrashItems(system.GetUser())
+	sResults := make([]model.TrashMetadata, 0)
 	for _, elem := range results {
 		if re.MatchString(elem.BaseName) {
 			sResults = append(sResults, elem)

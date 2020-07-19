@@ -9,6 +9,6 @@ const (
 	VersionMeta  = "unstable" // Version metadata to append to the version string		VersionMeta  = "stable" // Version metadata to append to the version string
 )
 
-func VersionString() string {
+func Version() string {
 	return strconv.Itoa(VersionMajor) + "." + strconv.Itoa(VersionMinor) + "." + strconv.Itoa(VersionPatch) + "-" + VersionMeta
 }
