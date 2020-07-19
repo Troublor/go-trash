@@ -22,6 +22,7 @@ var urCmd = &cobra.Command{
 	Long: `Un-remove: retrieve files or directories from trash bin, 
 If target path is specified, the retrieved files or directories will be put in to the target path. 
 If it is not specified, they will be put into original path`,
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, payload := range args {
 			trashInfo, err := UnRemove(payload, id, override, target, parent)
@@ -52,6 +53,23 @@ func init() {
 		"the directory that the retrieved files or directories will be put into. If not specified, they will be put into their own original path")
 	urCmd.Flags().BoolVarP(&parent, "parent", "p", false,
 		"no error if the target path does not exist, make parent directories as needed")
+}
+
+func AllTrashNames() (names []string) {
+	names = make([]string, 0)
+	for _, info := range List() {
+		var tmp = make([]string, len(names))
+		copy(tmp, names)
+		for i, name := range tmp {
+			if info.BaseName == name {
+				names[len(names)-1], names[i] = names[i], names[len(names)-1]
+				names = names[:len(names)-1]
+			} else {
+				names = append(names, info.BaseName)
+			}
+		}
+	}
+	return
 }
 
 func UnRemove(payload string, isId bool, override bool, target string, parent bool) (model.TrashMetadata, error) {

@@ -37,6 +37,7 @@ var rmCmd = &cobra.Command{
 	Use:   "rm [-d]|[-r][-p]",
 	Short: "Remove the files or directories by putting them in trash bin",
 	Long:  `Remove the files or directories by putting them in trash bin`,
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, itemPath := range args {
 			id, err := Remove(itemPath, directory, recursive, permanent)

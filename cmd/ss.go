@@ -15,6 +15,7 @@ var ssCmd = &cobra.Command{
 	Use:   "ss [-v]",
 	Short: "Search trash in trash bin",
 	Long:  `Search trash in trash bin`,
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		results := model.TrashMetadataList{}
 		for _, kw := range args {

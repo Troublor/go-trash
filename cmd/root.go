@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 )
-
 var db *storage.Database
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "gotrash",
 	Short: "Go-trash is a linux command-line trash files management tool",
 	Long: `Go-trash is a linux command-line trash files management tool which provides
@@ -22,11 +21,12 @@ var rootCmd = &cobra.Command{
 			_ = db.Close()
 		}
 	},
+	Version: storage.Version(),
 }
 
 func Execute() {
 	service.MustEventHappen("onCmdStart")
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		service.MustEventHappen("onCmdExitWithErr")
 		os.Exit(-1)
@@ -37,13 +37,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initialize)
 
-	rootCmd.AddCommand(lsCmd)
-	rootCmd.AddCommand(rmCmd)
-	rootCmd.AddCommand(settingCmd)
-	rootCmd.AddCommand(ssCmd)
-	rootCmd.AddCommand(urCmd)
-	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(cleanCmd)
+	RootCmd.AddCommand(lsCmd)
+	RootCmd.AddCommand(rmCmd)
+	RootCmd.AddCommand(ssCmd)
+	RootCmd.AddCommand(urCmd)
+	RootCmd.AddCommand(cleanCmd)
 }
 
 func initialize() {
