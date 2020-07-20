@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -25,5 +24,4 @@ func TestSearch(t *testing.T) {
 	if len(list) == 0 {
 		t.Fatal("result should not be empty")
 	}
-	fmt.Println(list.String(false))
 }
