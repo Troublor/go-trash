@@ -82,9 +82,9 @@ func (list TrashMetadataList) String(detailed bool) string {
 	}
 	t := gotabulate.Create(payload)
 	if detailed {
-		t.SetHeaders([]string{"Index", "Basename", "Original Path", "Type", "Owner", "Delete Time", "Trash Path"})
+		t.SetHeaders([]string{"Id", "Basename", "Original Path", "Type", "Owner", "Delete Time", "Trash Path"})
 	} else {
-		t.SetHeaders([]string{"Index", "Basename", "Original Path"})
+		t.SetHeaders([]string{"Id", "Basename", "Original Path"})
 	}
 	t.SetAlign("left")
 	return t.Render("simple")
