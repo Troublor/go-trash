@@ -39,7 +39,7 @@ If you want to install `gotrash` in another place, do `export CMD_PATH=<another 
 ## GOTRASH_PATH
 
 GOTRASH_PATH is the base directory to hold data of `gotrash`. The default `GOTRASH_PATH` is `/etc/gotrash` for `root` 
-users, and `~/.gotrash` for other users. 
+users, and `$HOME/.gotrash` for other users. 
 
 You can do `export GOTRASH_PATH=<an empty folder>` before `make install` to specifiy `GOTRASH_PATH`. This will make all 
 users' `GOTRASH_PATH` the same as what you specified.
