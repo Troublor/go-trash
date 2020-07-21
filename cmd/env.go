@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 )
 
@@ -30,12 +29,7 @@ func GetGoTrashPath() string {
 	if system.GetUser() == "root" {
 		return "/etc/gotrash"
 	} else {
-		u, err := user.Current()
-		if err != nil {
-			_, _ = fmt.Fprintln(os.Stderr, err)
-			os.Exit(-1)
-		}
-		return path.Join(u.HomeDir, ".gotrash")
+		return path.Join(os.Getenv("HOME"), ".gotrash")
 	}
 }
 
