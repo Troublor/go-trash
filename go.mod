@@ -1,6 +1,6 @@
 module github.com/Troublor/go-trash
 
-go 1.14
+go 1.12
 
 require (
 	github.com/bndr/gotabulate v1.1.2

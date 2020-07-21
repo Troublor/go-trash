@@ -65,7 +65,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool, permanent bool) (
 	if !filepath.IsAbs(itemPath) {
 		itemPath, err = filepath.Abs(itemPath)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 	}
 	fileInfo, err := os.Stat(itemPath)
@@ -73,7 +73,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool, permanent bool) (
 		if os.IsNotExist(err) {
 			return "", errs.ItemNotExistError
 		} else {
-			panic(err)
+			fmt.Println(err)
 		}
 	}
 
@@ -95,7 +95,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool, permanent bool) (
 			// move the item into trash directory
 			err = system.SafeRename(itemPath, path.Join(trashDir, id))
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 			return id, nil
 		}
@@ -106,7 +106,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool, permanent bool) (
 		}
 		isEmpty, err := DirectoryIsEmpty(itemPath)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
 		}
 		if !isEmpty && !recursive {
 			return "", errs.DirectoryNotEmptyError
@@ -121,7 +121,7 @@ func Remove(itemPath string, isDirectory bool, recursive bool, permanent bool) (
 			// move the item into trash directory
 			err = system.SafeRename(itemPath, path.Join(trashDir, id))
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 			return id, nil
 		}
