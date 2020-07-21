@@ -32,3 +32,4 @@ trash
 clear_env.sh
 root_trash_info.db
 root_trash_bin/
+.gotrash/
