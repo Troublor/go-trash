@@ -27,5 +27,5 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -coverprofile=coverage.out -v ./...
       - codecov/upload:
-        file: {{ coverage.out }}`
+        file: {{ coverage.out }}
         token: dbdf8f93-dab1-4e31-b19e-1c9863839c9f
