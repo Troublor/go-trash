@@ -19,7 +19,7 @@ jobs:
     #### expecting it in the form of
     ####   /go/src/github.com/circleci/go-tool
     ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    working_directory: /go/src/github.com/Troublor/go-trash
     steps:
       - checkout
 
@@ -28,4 +28,4 @@ jobs:
       - run: go test -coverprofile=coverage.out -v ./...
       - codecov/upload:
         file: {{ coverage.out }}
-        token: dbdf8f93-dab1-4e31-b19e-1c9863839c9f
+        token: "dbdf8f93-dab1-4e31-b19e-1c9863839c9f"
