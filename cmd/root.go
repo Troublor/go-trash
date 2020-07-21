@@ -43,6 +43,7 @@ func init() {
 	RootCmd.AddCommand(ssCmd)
 	RootCmd.AddCommand(urCmd)
 	RootCmd.AddCommand(cleanCmd)
+	RootCmd.AddCommand(envCmd)
 }
 
 func initialize() {

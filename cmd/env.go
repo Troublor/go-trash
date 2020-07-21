@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Troublor/go-trash/storage/model"
 	"github.com/Troublor/go-trash/system"
+	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -66,4 +67,30 @@ func GetDbPath() string {
 
 func GetTrashBinPath() string {
 	return path.Join(GetGoTrashPath(), "trash_bin")
+}
+
+var envCmd = &cobra.Command{
+	Use:   "env items...",
+	Short: "Show gotrash environment variables",
+	Long:  `Show gotrash environment variables`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var envVars = map[string]string{
+			"GOTRASH_PATH": GetGoTrashPath(),
+		}
+		if len(args) == 0 {
+			// show all environment variables
+			for name, value := range envVars {
+				fmt.Printf("%s=%s\n", name, value)
+			}
+		} else {
+			for _, arg := range args {
+				variable, ok := envVars[arg]
+				if !ok {
+					fmt.Println("environment variable", arg, "not found")
+				} else {
+					fmt.Printf("%s=%s\n", arg, variable)
+				}
+			}
+		}
+	},
 }

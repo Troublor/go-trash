@@ -34,9 +34,9 @@ var cleanCmd = &cobra.Command{
 				case errs.ItemNotExistError:
 					fmt.Printf("Clean Error: item \"%s\" does not exist\n", arg)
 				case errs.MultipleItemsError:
-					fmt.Printf("Clean Error: multiple items named \"%s\" found in trash bin, please specify trash id to retrieve", arg)
+					fmt.Printf("Clean Error: multiple items named \"%s\" found in trash bin, please specify trash id to retrieve\n", arg)
 				default:
-					fmt.Printf("Clean Error: %s", err.Error())
+					fmt.Printf("Clean Error: %s\n", err.Error())
 				}
 			}
 		}
