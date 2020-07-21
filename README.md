@@ -16,6 +16,14 @@ A trash files and directories management tool for Linux command line.
 - Auto clearance of trash bin
 - Command completion for trash items
 
+## Tests
+
+To execute go tests:
+
+```bash
+make test
+```
+
 ## Installation
 
 **The installation of Go-trash requires root authentication.**
@@ -23,15 +31,20 @@ A trash files and directories management tool for Linux command line.
 ```
 git clone https://github.com/Troublor/go-trash.git
 cd go-trash
-chmod +x install.sh
-./install.sh
+make install 
 ```
+This commands will install `gotrash` at `~/bin`
+If you want to install `gotrash` in another place, do `export CMD_PATH=<another folder>` before `make install` 
 
-The executable file of Go-trash is installed in to /usr/local/bin 
-The trash bin is located at /etc/gotrash
+## GOTRASH_PATH
 
-To uninstall Go-trash, run the uninstall.sh script: 
+GOTRASH_PATH is the base directory to hold data of `gotrash`. The default `GOTRASH_PATH` is `/etc/gotrash` for `root` 
+users, and `~/.gotrash` for other users. 
 
-```
-./uninstall.sh
-```
+You can do `export GOTRASH_PATH=<an empty folder>` before `make install` to specifiy `GOTRASH_PATH`. This will make all 
+users' `GOTRASH_PATH` the same as what you specified.
+
+## Uninstall
+
+To uninstall gotrash, just simply delete the `GOTRASH_PATH` folder and the `gotrash` command file. 
+** Note that this will permanently delete any trash in the trash bin.**
