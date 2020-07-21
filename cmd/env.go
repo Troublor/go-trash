@@ -17,9 +17,17 @@ import (
 var GOTRASH_PATH string
 
 func GetGoTrashPath() string {
+	p := os.Getenv("GOTRASH_PATH")
+	if p != "" {
+		// override GOTRASH_PATH if environment is set globally
+		return p
+	}
 	if GOTRASH_PATH != "" {
+		// return GOTRASH_PATH if set at compilation time
 		return GOTRASH_PATH
-	} else if system.GetUser() == "root" {
+	}
+	// default GOTRASH_PATH
+	if system.GetUser() == "root" {
 		return "/etc/gotrash"
 	} else {
 		u, err := user.Current()
