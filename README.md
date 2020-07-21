@@ -26,8 +26,6 @@ make test
 
 ## Installation
 
-**The installation of Go-trash requires root authentication.**
-
 ```
 git clone https://github.com/Troublor/go-trash.git
 cd go-trash
