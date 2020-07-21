@@ -1,6 +1,6 @@
 # Go-trash
 
-[![CircleCI](https://circleci.com/gh/Troublor/go-trash.svg?style=svg)](https://github.com/Troublor/go-trash.git)
+[![CI](https://github.com/Troublor/go-trash/workflows/Go-Test/badge.svg)](https://github.com/Troublor/go-trash.git)
 [![codecov](https://codecov.io/gh/Troublor/go-trash/branch/master/graph/badge.svg)](https://codecov.io/gh/Troublor/go-trash)
 
 A trash files and directories management tool for Linux command line. 
