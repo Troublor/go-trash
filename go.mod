@@ -8,5 +8,5 @@ require (
 	github.com/jinzhu/gorm v1.9.15
 	github.com/mattn/go-sqlite3 v1.14.0
 	github.com/otiai10/copy v1.2.0
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.7
 )
