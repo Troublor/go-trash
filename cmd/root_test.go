@@ -8,15 +8,15 @@ import (
 
 func TestMain(m *testing.M) {
 	GOTRASH_PATH = "./tmp/"
-	// recreate GOTRASH_PATH if not exist
-	if _, err := os.Stat(GOTRASH_PATH); os.IsNotExist(err) {
-		err := os.MkdirAll(GOTRASH_PATH, os.ModePerm)
+	// recreate GetGoTrashPath() if not exist
+	if _, err := os.Stat(GetGoTrashPath()); os.IsNotExist(err) {
+		err := os.MkdirAll(GetGoTrashPath(), os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
 	}
 	defer func() {
-		// remove the GOTRASH_PATH
+		// remove the GetGoTrashPath()
 		err := os.RemoveAll(GetDbPath())
 		if err != nil {
 			panic(err)
@@ -39,9 +39,9 @@ func TestMain(m *testing.M) {
 			panic(err)
 		}
 	}()
-	_ = os.MkdirAll(GOTRASH_PATH, os.ModePerm)
+	_ = os.MkdirAll(GetGoTrashPath(), os.ModePerm)
 	defer func() {
-		_ = os.RemoveAll(GOTRASH_PATH)
+		_ = os.RemoveAll(GetGoTrashPath())
 	}()
 	defer func() {
 		err := db.Close()

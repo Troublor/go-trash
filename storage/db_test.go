@@ -69,7 +69,7 @@ func TestDatabase_InsertGetDeleteListTrashItem(t *testing.T) {
 		t.Fatal("database should not have data")
 	}
 	// insert
-	err = db.InsertTrashItem("1", "1", "1", "1", TYPE_FILE, "user")
+	err = db.InsertTrashItem("1", "1", "1", "1", model.TYPE_FILE, "user")
 	if err != nil {
 		t.Fatal(err)
 	}

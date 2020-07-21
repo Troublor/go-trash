@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 )
+
 var db *storage.Database
 
 var RootCmd = &cobra.Command{
@@ -45,6 +46,15 @@ func init() {
 }
 
 func initialize() {
+	// check if GetGoTrashPath() exists
+	if _, err := os.Stat(GetGoTrashPath()); os.IsNotExist(err) {
+		fmt.Println("Initialize gotrash at", GetGoTrashPath())
+		err := os.MkdirAll(GetGoTrashPath(), os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
+	}
 	db = storage.NewDatabase(GetDbPath())
 	err := db.Open()
 	if err != nil {
