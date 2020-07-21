@@ -2,8 +2,6 @@
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2.1
-orbs:
-  codecov: codecov/codecov@1.0.2
 jobs:
   build:
     docker:
@@ -26,6 +24,4 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
       - run: go test -coverprofile=coverage.out -v ./...
-      - codecov/upload:
-          file: coverage.out
-          token: "dbdf8f93-dab1-4e31-b19e-1c9863839c9f"
+      - run: bash <(curl -s https://codecov.io/bash) -t dbdf8f93-dab1-4e31-b19e-1c9863839c9f
